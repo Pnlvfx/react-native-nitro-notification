@@ -9,8 +9,14 @@
   },
   "autolinking": {
     "NitroNotification": {
-      "swift": "NitroNotification",
-      "kotlin": "NitroNotification"
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "NitroNotification"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "NitroNotification"
+      }
     }
   },
   "ignorePaths": ["node_modules"]
