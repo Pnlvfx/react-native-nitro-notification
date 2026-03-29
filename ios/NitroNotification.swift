@@ -15,8 +15,6 @@ class NitroNotification: HybridNitroNotificationSpec {
     return Promise.async {
       print("[NitroNotification] requestPermissions called")
       let center = UNUserNotificationCenter.current()
-      center.delegate = NotificationHub.shared
-      NotificationHub.shared.setupTokenObserver()
       print("[NitroNotification] requesting authorization")
       let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
       print("[NitroNotification] authorization granted: \(granted)")
