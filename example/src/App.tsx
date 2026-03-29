@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
+  Alert,
   Button,
-  NativeModules,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,48 +10,160 @@ import {
 import { Notifications } from 'react-native-nitro-notification';
 import type { PermissionStatus } from 'react-native-nitro-notification';
 
-const requestPerms = async (setStatus: (s: PermissionStatus) => void) => {
-  const status = await Notifications.requestPermissions();
-  setStatus(status);
-};
+const SERVER = 'http://192.168.1.111:8192';
 
-const getStatus = async (setStatus: (s: PermissionStatus) => void) => {
-  const status = await Notifications.getPermissionStatus();
-  setStatus(status);
-};
+export default function App() {
+  const [permStatus, setPermStatus] =
+    useState<PermissionStatus>('undetermined');
+  const [token, setToken] = useState<string | undefined>(undefined);
+  const [lastEvent, setLastEvent] = useState<string | undefined>(undefined);
 
-const getToken = async (setToken: (t: string) => void) => {
-  const token = await Notifications.getDevicePushToken();
-  setToken(token);
-};
-
-const scheduleLocalNotification = async () => {
-  const { default: PushNotificationIOS } = await import(
-    '@react-native-community/push-notification-ios'
-  ).catch(() => ({ default: null }));
-  if (PushNotificationIOS) {
-    PushNotificationIOS.addNotificationRequest({
-      id: 'test-local',
-      title: 'Test Notification',
-      body: 'Hello from NitroNotification!',
+  const setupNotifications = () => {
+    Notifications.setOnTokenRefreshed((t) => {
+      setToken(t);
     });
-    return;
-  }
-  // Fallback: alert the user to install the dependency
-  console.warn(
-    'Install @react-native-community/push-notification-ios to test local notifications'
+    Notifications.setOnNotificationReceived((n) => {
+      setLastEvent(`Received: ${n.title ?? ''} — ${n.body ?? ''}`);
+    });
+    Notifications.setOnNotificationTapped((r) => {
+      setLastEvent(
+        `Tapped: ${r.notification.title ?? ''} (${r.actionIdentifier})`
+      );
+    });
+    Notifications.setForegroundPresentationOptions(true, true, true);
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      const status = await Notifications.getPermissionStatus();
+      setPermStatus(status);
+      if (status === 'granted') {
+        setupNotifications();
+        const t = await Notifications.getDevicePushToken();
+        setToken(t);
+      }
+    };
+    void init();
+  }, []);
+
+  const handleRequestPermissions = async () => {
+    const status = await Notifications.requestPermissions();
+    setPermStatus(status);
+    if (status === 'granted') {
+      setupNotifications();
+      const t = await Notifications.getDevicePushToken();
+      setToken(t);
+    }
+  };
+
+  const handleRegisterToken = async () => {
+    if (!token) return;
+    const res = await fetch(`${SERVER}/push/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, platform: 'ios', sandbox: true }),
+    });
+    if (res.ok) {
+      Alert.alert('Registered', 'Token sent to server.');
+    } else {
+      Alert.alert('Error', `Server responded with ${res.status}`);
+    }
+  };
+
+  const handleSendTestPush = async () => {
+    if (!token) return;
+    const res = await fetch(`${SERVER}/push/notification-test`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        deviceToken: token,
+        title: 'Test notification',
+        body: 'Sent from the example app',
+        sandbox: true,
+      }),
+    });
+    if (!res.ok) {
+      Alert.alert('Error', `Server responded with ${res.status}`);
+    }
+  };
+
+  const handleReset = () => {
+    setPermStatus('undetermined');
+    setToken(undefined);
+    setLastEvent(undefined);
+  };
+
+  const handleUnregister = async () => {
+    if (token) {
+      await fetch(`${SERVER}/push/register`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+    }
+    await Notifications.unregisterForNotifications();
+    setToken(undefined);
+    setLastEvent(undefined);
+    Alert.alert('Unregistered', 'Token removed from server and device.');
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Nitro Notifications</Text>
+
+      <Section label={`Permission: ${permStatus}`}>
+        <Button
+          title="Request Permissions"
+          onPress={handleRequestPermissions}
+          disabled={permStatus === 'granted'}
+        />
+      </Section>
+
+      <Section label={token ? `Token: ${token.slice(0, 16)}…` : 'Token: none'}>
+        <Button
+          title="Register Token with Server"
+          onPress={handleRegisterToken}
+          disabled={!token}
+        />
+        <Button
+          title="Send Test Push"
+          onPress={handleSendTestPush}
+          disabled={!token}
+        />
+        <Button title="Unregister" color="#c0392b" onPress={handleUnregister} />
+        <Button title="Reset UI" color="#7f8c8d" onPress={handleReset} />
+      </Section>
+
+      <Section label="Last Event">
+        <Text style={styles.event}>{lastEvent ?? 'None'}</Text>
+      </Section>
+    </ScrollView>
   );
-};
+}
+
+const Section = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <View style={styles.section}>
+    <Text style={styles.label}>{label}</Text>
+    {children}
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    gap: 8,
+    gap: 24,
   },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16 },
+  title: { fontSize: 22, fontWeight: 'bold' },
+  section: { alignItems: 'center', gap: 8, width: '100%' },
   label: { fontSize: 13, color: '#555', textAlign: 'center' },
-  spacer: { height: 16 },
+  event: { fontSize: 13, color: '#222', textAlign: 'center' },
 });

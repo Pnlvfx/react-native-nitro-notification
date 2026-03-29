@@ -13,12 +13,16 @@ class NitroNotification: HybridNitroNotificationSpec {
 
   func requestPermissions() throws -> Promise<PermissionStatus> {
     return Promise.async {
+      print("[NitroNotification] requestPermissions called")
       let center = UNUserNotificationCenter.current()
       center.delegate = NotificationHub.shared
       NotificationHub.shared.setupTokenObserver()
+      print("[NitroNotification] requesting authorization")
       let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+      print("[NitroNotification] authorization granted: \(granted)")
       if granted {
         await MainActor.run {
+          print("[NitroNotification] calling registerForRemoteNotifications")
           UIApplication.shared.registerForRemoteNotifications()
         }
         return PermissionStatus.granted
@@ -48,6 +52,9 @@ class NitroNotification: HybridNitroNotificationSpec {
 
   func getDevicePushToken() throws -> Promise<String> {
     return Promise.async {
+      await MainActor.run {
+        UIApplication.shared.registerForRemoteNotifications()
+      }
       return await withCheckedContinuation { continuation in
         NotificationHub.shared.awaitToken { token in
           continuation.resume(returning: token)

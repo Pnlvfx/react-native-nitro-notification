@@ -19,6 +19,7 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = NitroNotificationExample/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = NitroNotificationExample/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = NitroNotificationExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		284F95F72F7969A200BF107F /* NitroNotificationExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = NitroNotificationExample.entitlements; path = NitroNotificationExample/NitroNotificationExample.entitlements; sourceTree = "<group>"; };
 		4A8AE7E31B8148DEF785C67A /* Pods-NitroNotificationExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NitroNotificationExample.release.xcconfig"; path = "Target Support Files/Pods-NitroNotificationExample/Pods-NitroNotificationExample.release.xcconfig"; sourceTree = "<group>"; };
 		4B0FF7C8D411D3ACDA9DE61F /* libPods-NitroNotificationExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NitroNotificationExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FC196B262400AB9FA0F18AA /* Pods-NitroNotificationExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NitroNotificationExample.debug.xcconfig"; path = "Target Support Files/Pods-NitroNotificationExample/Pods-NitroNotificationExample.debug.xcconfig"; sourceTree = "<group>"; };
@@ -42,6 +43,7 @@
 		13B07FAE1A68108700A75B9A /* NitroNotificationExample */ = {
 			isa = PBXGroup;
 			children = (
+				284F95F72F7969A200BF107F /* NitroNotificationExample.entitlements */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -259,7 +261,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = NitroNotificationExample/NitroNotificationExample.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CFCNN9T5KV;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = NitroNotificationExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -287,7 +291,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = NitroNotificationExample/NitroNotificationExample.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CFCNN9T5KV;
 				INFOPLIST_FILE = NitroNotificationExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (

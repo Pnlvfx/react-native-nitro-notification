@@ -1,5 +1,4 @@
 import Foundation
-import UIKit
 import UserNotifications
 
 final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
@@ -16,6 +15,12 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
   private var pendingTokenContinuations: [(String) -> Void] = []
   private var currentToken: String?
 
+  override private init() {
+    super.init()
+    UNUserNotificationCenter.current().delegate = self
+    setupTokenObserver()
+  }
+
   func awaitToken(completion: @escaping (String) -> Void) {
     if let token = currentToken {
       completion(token)
@@ -25,6 +30,7 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
   }
 
   func setupTokenObserver() {
+    print("[NotificationHub] setupTokenObserver called")
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(handleTokenNotification(_:)),
