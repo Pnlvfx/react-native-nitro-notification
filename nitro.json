@@ -1,0 +1,17 @@
+{
+  "cxxNamespace": ["nitronotification"],
+  "ios": {
+    "iosModuleName": "NitroNotification"
+  },
+  "android": {
+    "androidNamespace": ["nitronotification"],
+    "androidCxxLibName": "nitronotification"
+  },
+  "autolinking": {
+    "NitroNotification": {
+      "swift": "NitroNotification",
+      "kotlin": "NitroNotification"
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
