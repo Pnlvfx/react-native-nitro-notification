@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   Alert,
   Button,
+  Clipboard,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -34,7 +36,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    const init = async () => {
+    (async () => {
       const status = await Notifications.getPermissionStatus();
       setPermStatus(status);
       if (status === 'granted') {
@@ -42,8 +44,7 @@ export default function App() {
         const t = await Notifications.getDevicePushToken();
         setToken(t);
       }
-    };
-    void init();
+    })();
   }, []);
 
   const handleRequestPermissions = async () => {
@@ -72,7 +73,7 @@ export default function App() {
 
   const handleSendTestPush = async () => {
     if (!token) return;
-    const res = await fetch(`${SERVER}/push/notification-test`, {
+    const res = await fetch(`${SERVER}/push/test`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -107,10 +108,15 @@ export default function App() {
     Alert.alert('Unregistered', 'Token removed from server and device.');
   };
 
+  const copyToken = () => {
+    if (!token) return;
+    Clipboard.setString(token);
+    Alert.alert('Copied');
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Nitro Notifications</Text>
-
       <Section label={`Permission: ${permStatus}`}>
         <Button
           title="Request Permissions"
@@ -118,8 +124,12 @@ export default function App() {
           disabled={permStatus === 'granted'}
         />
       </Section>
-
-      <Section label={token ? `Token: ${token.slice(0, 16)}…` : 'Token: none'}>
+      <Pressable onPress={copyToken}>
+        <Text style={{ color: 'white' }}>
+          {token ? `Token: ${token.slice(0, 16)}…` : 'Token: none'}
+        </Text>
+      </Pressable>
+      <Section label="In">
         <Button
           title="Register Token with Server"
           onPress={handleRegisterToken}
@@ -133,7 +143,6 @@ export default function App() {
         <Button title="Unregister" color="#c0392b" onPress={handleUnregister} />
         <Button title="Reset UI" color="#7f8c8d" onPress={handleReset} />
       </Section>
-
       <Section label="Last Event">
         <Text style={styles.event}>{lastEvent ?? 'None'}</Text>
       </Section>
@@ -146,7 +155,7 @@ const Section = ({
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) => (
   <View style={styles.section}>
     <Text style={styles.label}>{label}</Text>
