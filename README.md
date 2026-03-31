@@ -43,8 +43,6 @@ The library needs to receive the device push token from the system. iOS delivers
 Open your `AppDelegate.swift` and add the following:
 
 ```swift
-import react_native_nitro_notification
-
 // Inside your AppDelegate class:
 
 func application(
