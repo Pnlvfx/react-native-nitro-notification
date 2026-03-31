@@ -88,10 +88,10 @@ class NitroNotification: HybridNitroNotificationSpec {
 
   // MARK: - Foreground Presentation
 
-  func setForegroundPresentationOptions(alert: Bool, badge: Bool, sound: Bool) {
-    NotificationHub.shared.foregroundAlert = alert
-    NotificationHub.shared.foregroundBadge = badge
-    NotificationHub.shared.foregroundSound = sound
+  func setForegroundPresentationOptions(options: ForegroundPresentationOptions) {
+    NotificationHub.shared.foregroundAlert = options.alert
+    NotificationHub.shared.foregroundBadge = options.badge
+    NotificationHub.shared.foregroundSound = options.sound
   }
 
 }

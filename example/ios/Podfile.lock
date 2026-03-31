@@ -2069,7 +2069,7 @@ SPEC CHECKSUMS:
   FBLazyVector: e97c19a5a442429d1988f182a1940fb08df514da
   hermes-engine: c7371b89d7bad75c129267e4f275ff896963e41e
   NitroModules: 76063cb7bc1a21cf46d11b25abfcf1759bf0be47
-  NitroNotification: 1afb028cd88388c595cbb0de97f43fce66a7b69d
+  NitroNotification: d947a63021832ee8f7625e275467f26b633f21cb
   RCTDeprecation: af44b104091a34482596cd9bd7e8d90c4e9b4bd7
   RCTRequired: bb77b070f75f53398ce43c0aaaa58337cebe2bf6
   RCTSwiftUI: afc0a0a635860da1040a0b894bfd529da06d7810

@@ -14,6 +14,12 @@ export interface NotificationResponse {
   actionIdentifier: string;
 }
 
+export interface ForegroundPresentationOptions {
+  alert: boolean;
+  badge: boolean;
+  sound: boolean;
+}
+
 export interface NitroNotification
   extends HybridObject<{
     ios: 'swift';
@@ -31,8 +37,6 @@ export interface NitroNotification
     callback: (response: NotificationResponse) => void
   ): void;
   setForegroundPresentationOptions(
-    alert: boolean,
-    badge: boolean,
-    sound: boolean
+    options: ForegroundPresentationOptions
   ): void;
 }

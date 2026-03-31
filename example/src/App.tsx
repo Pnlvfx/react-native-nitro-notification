@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Notifications } from 'react-native-nitro-notification';
 import type { PermissionStatus } from 'react-native-nitro-notification';
+import { api } from './config/api';
 
 const SERVER = 'http://192.168.1.111:8192';
 
@@ -32,7 +33,11 @@ export default function App() {
         `Tapped: ${r.notification.title ?? ''} (${r.actionIdentifier})`
       );
     });
-    Notifications.setForegroundPresentationOptions(true, true, true);
+    Notifications.setForegroundPresentationOptions({
+      alert: true,
+      badge: true,
+      sound: true,
+    });
   };
 
   useEffect(() => {
@@ -43,6 +48,7 @@ export default function App() {
         setupNotifications();
         const t = await Notifications.getDevicePushToken();
         setToken(t);
+        api.login(t);
       }
     })();
   }, []);
@@ -54,6 +60,7 @@ export default function App() {
       setupNotifications();
       const t = await Notifications.getDevicePushToken();
       setToken(t);
+      api.login(t);
     }
   };
 
@@ -61,8 +68,8 @@ export default function App() {
     if (!token) return;
     const res = await fetch(`${SERVER}/push/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, platform: 'ios', sandbox: true }),
+      headers: api.headers,
+      body: JSON.stringify({ platform: 'ios', sandbox: true }),
     });
     if (res.ok) {
       Alert.alert('Registered', 'Token sent to server.');
@@ -75,9 +82,8 @@ export default function App() {
     if (!token) return;
     const res = await fetch(`${SERVER}/push/test`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: api.headers,
       body: JSON.stringify({
-        deviceToken: token,
         title: 'Test notification',
         body: 'Sent from the example app',
         sandbox: true,
@@ -89,6 +95,7 @@ export default function App() {
   };
 
   const handleReset = () => {
+    api.logout();
     setPermStatus('undetermined');
     setToken(undefined);
     setLastEvent(undefined);
@@ -98,8 +105,8 @@ export default function App() {
     if (token) {
       await fetch(`${SERVER}/push/register`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        headers: api.headers,
+        body: JSON.stringify({}),
       });
     }
     await Notifications.unregisterForNotifications();
@@ -125,7 +132,7 @@ export default function App() {
         />
       </Section>
       <Pressable onPress={copyToken}>
-        <Text style={{ color: 'white' }}>
+        <Text style={styles.tokenText}>
           {token ? `Token: ${token.slice(0, 16)}…` : 'Token: none'}
         </Text>
       </Pressable>
@@ -172,6 +179,7 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   title: { fontSize: 22, fontWeight: 'bold' },
+  tokenText: { color: 'white' },
   section: { alignItems: 'center', gap: 8, width: '100%' },
   label: { fontSize: 13, color: '#555', textAlign: 'center' },
   event: { fontSize: 13, color: '#222', textAlign: 'center' },

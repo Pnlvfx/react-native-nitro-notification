@@ -1,6 +1,6 @@
 {
   "name": "react-native-nitro-notification",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Remote push notifications (APNs) via Nitro Modules",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
@@ -40,10 +40,12 @@
     "start": "yarn workspace react-native-nitro-notification-example start",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
+    "build": "bob build",
     "nitrogen": "nitrogen",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "update": "yarn upgrade-interactive"
+    "update": "yarn upgrade-interactive",
+    "publish": "node tools/publish.ts"
   },
   "keywords": [
     "react-native",
@@ -74,6 +76,7 @@
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "execa": "^9.6.1",
     "nitrogen": "^0.35.2",
     "prettier": "^2.8.8",
     "react": "19.2.3",
@@ -91,7 +94,6 @@
   "workspaces": [
     "example"
   ],
-  "packageManager": "yarn@4.11.0",
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
@@ -131,5 +133,6 @@
       "eslint"
     ],
     "version": "0.57.2"
-  }
+  },
+  "packageManager": "yarn@4.13.0+sha512.5c20ba010c99815433e5c8453112165e673f1c7948d8d2b267f4b5e52097538658388ebc9f9580656d9b75c5cc996f990f611f99304a2197d4c56d21eea370e7"
 }
