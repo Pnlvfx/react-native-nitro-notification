@@ -1,5 +1,7 @@
 # react-native-nitro-notification
 
+> **Work in progress.** This library is under active development, the API will likely change, and it is not ready for production use.
+
 A thin, fast, type-safe wrapper around **Apple Push Notification service (APNs)** for React Native, built on [Nitro Modules](https://nitro.margelo.com/).
 
 This library is for **remote push notifications only** — notifications sent from a server to a device via APNs. It is not for local (in-app scheduled) notifications. It handles:
@@ -154,11 +156,11 @@ Notifications.setOnNotificationTapped((response) => {
 By default all three options are enabled. Call this to customize how notifications appear when the app is in the foreground.
 
 ```ts
-Notifications.setForegroundPresentationOptions(
-  true, // alert (banner)
-  true, // badge
-  true // sound
-);
+Notifications.setForegroundPresentationOptions({
+  alert: true, // banner
+  badge: true,
+  sound: true,
+});
 ```
 
 ---
@@ -178,6 +180,12 @@ interface NotificationPayload {
 interface NotificationResponse {
   notification: NotificationPayload;
   actionIdentifier: string;
+}
+
+interface ForegroundPresentationOptions {
+  alert: boolean;
+  badge: boolean;
+  sound: boolean;
 }
 ```
 
@@ -200,7 +208,11 @@ const setupNotifications = async () => {
     await sendTokenToServer(newToken);
   });
 
-  Notifications.setForegroundPresentationOptions(true, false, true);
+  Notifications.setForegroundPresentationOptions({
+    alert: true,
+    badge: false,
+    sound: true,
+  });
 
   Notifications.setOnNotificationReceived((notification) => {
     console.log('Received:', notification.title);

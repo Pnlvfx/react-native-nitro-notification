@@ -4,6 +4,12 @@ Contributions are always welcome, no matter how large or small!
 
 We want this community to be friendly and respectful to each other. Please follow it in all your interactions with the project. Before contributing, please read the [code of conduct](./CODE_OF_CONDUCT.md).
 
+## Note on private dev dependencies
+
+Some `devDependencies` in this project are private packages used internally to help speed up development and release workflows. These are not required to use the library — they only affect the development experience when working on the package itself.
+
+If you clone the repo and run `yarn`, the install will fail to resolve those packages. This is a known issue and will be addressed soon, the goal is to remove all private dependencies so anyone can clone and contribute without friction. In the meantime, feel free to open issues or PRs, but be aware you may not be able to run the full dev setup locally.
+
 ## Development workflow
 
 This project is a monorepo managed using [Yarn workspaces](https://yarnpkg.com/features/workspaces). It contains the following packages:
@@ -89,8 +95,6 @@ To fix formatting errors, run the following:
 ```sh
 yarn lint --fix
 ```
-
-
 
 ### Scripts
 
