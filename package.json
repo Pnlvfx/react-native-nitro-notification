@@ -1,6 +1,6 @@
 {
   "name": "react-native-nitro-notification",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Remote push notifications (APNs) via Nitro Modules",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
@@ -45,7 +45,7 @@
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "update": "yarn upgrade-interactive",
-    "publish": "node tools/publish.ts"
+    "release": "node tools/release.ts"
   },
   "keywords": [
     "react-native",
