@@ -39,7 +39,6 @@
     "prepare": "bob build",
     "build": "bob build",
     "nitrogen": "nitrogen",
-    "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "update": "yarn upgrade-interactive",
     "release": "node tools/release.ts"
@@ -107,7 +106,8 @@
       [
         "module",
         {
-          "esm": true
+          "esm": true,
+          "configFile": true
         }
       ],
       [

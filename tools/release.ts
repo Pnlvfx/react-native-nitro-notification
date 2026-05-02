@@ -1,7 +1,7 @@
 import { execa } from 'execa';
 
-await execa('yarn', ['typecheck']);
-await execa('yarn', ['lint']);
-// await execa('yarn', ['version', 'minor']);
-await execa('yarn', ['prepare']);
-await execa('yarn', ['npm', 'publish']);
+await execa('yarn', ['tsc'], { stdio: 'inherit' });
+await execa('yarn', ['lint'], { stdio: 'inherit' });
+await execa('yarn', ['version', 'minor'], { stdio: 'inherit' });
+await execa('yarn', ['prepare'], { stdio: 'inherit' });
+await execa('yarn', ['npm', 'publish'], { stdio: 'inherit' });

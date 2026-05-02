@@ -1,10 +1,15 @@
 import { execa } from 'execa';
-import { exec } from 'node:child_process';
-import { promisify } from 'node:util';
 
-const execAsync = promisify(exec);
+const rootDir =
+  '/Users/simonegauli/Desktop/packages/react-native-nitro-notification';
+const exampleDir = `${rootDir}/example`;
 
-await execAsync(
-  "watchman watch-del '/Users/simonegauli/Desktop/packages/react-native-nitro-notification' ; watchman watch-project '/Users/simonegauli/Desktop/packages/react-native-nitro-notification'"
-);
+// Reset watchman for root
+await execa('watchman', ['watch-del', rootDir], { stdio: 'inherit' });
+await execa('watchman', ['watch-project', rootDir], { stdio: 'inherit' });
+
+// Reset watchman for example
+await execa('watchman', ['watch-del', exampleDir], { stdio: 'inherit' });
+await execa('watchman', ['watch-project', exampleDir], { stdio: 'inherit' });
+
 await execa('node_modules/.bin/react-native', ['start'], { stdio: 'inherit' });
