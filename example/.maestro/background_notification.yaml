@@ -3,8 +3,9 @@ appId: nitronotification.example
 - launchApp:
     clearState: false
 
-- assertVisible:
-    text: Nitro Notifications
+- extendedWaitUntil:
+    visible:
+      text: Nitro Notifications
     timeout: 10000
 
 - pressKey: Home
@@ -17,17 +18,20 @@ appId: nitronotification.example
       PUSH_TITLE: Background Test
       PUSH_BODY: Tap to open the app
 
-- assertVisible:
-    text: Background Test
+- extendedWaitUntil:
+    visible:
+      text: Background Test
     timeout: 8000
 
 - tapOn:
     text: Background Test
 
-- assertVisible:
-    id: last-event-text
+- extendedWaitUntil:
+    visible:
+      id: last-event-text
     timeout: 8000
 
-- assertVisible:
-    text: 'Tapped: Background Test'
+- extendedWaitUntil:
+    visible:
+      text: 'Tapped: Background Test'
     timeout: 8000
