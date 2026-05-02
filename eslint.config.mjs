@@ -2,7 +2,7 @@ import { fixupConfigRules } from '@eslint/compat';
 import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import prettier from 'eslint-plugin-prettier';
-import { defineConfig } from 'eslint/config';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,7 +23,5 @@ export default defineConfig([
       'prettier/prettier': 'error',
     },
   },
-  {
-    ignores: ['node_modules/', 'lib/'],
-  },
+  globalIgnores(['node_modules/', 'lib/', 'example/.maestro']),
 ]);

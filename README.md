@@ -70,7 +70,9 @@ These two methods are the **only** way iOS delivers push tokens to an app. There
 
 ## Capabilities
 
-In Xcode, go to your target > **Signing & Capabilities** and add **Push Notifications**.**Background Modes** (optional) — only needed if you want your app to wake up in the background to silently process a notification before the user taps it (requires `content-available: 1` in the APNs payload). Not needed for standard foreground/tap notification handling.
+In Xcode, go to your target > **Signing & Capabilities** and add **Push Notifications**.
+
+**Background Modes** (optional) — only needed if you want your app to wake up in the background to silently process a notification before the user taps it (requires `content-available: 1` in the APNs payload). Not needed for standard foreground/tap notification handling.
 
 ---
 
@@ -82,12 +84,22 @@ import { Notifications } from 'react-native-nitro-notification';
 
 ### Request permissions
 
-Must be called before any notification can be delivered. Prompts the user on first call.
+Must be called before any notification can be delivered. Prompts the user on first call. Returns a `PermissionStatus` indicating the outcome.
 
 ```ts
+// Default — requests alert, sound and badge. Shows the system prompt.
 const status = await Notifications.requestPermissions();
-// 'granted' | 'denied' | 'undetermined'
+
+// Custom options
+const status = await Notifications.requestPermissions({
+  alert: true,  // default: true
+  sound: true,  // default: true
+  badge: true,  // default: true
+  provisional: true, // silent delivery, no prompt shown — see Provisional notifications below
+});
 ```
+
+> **`criticalAlert`** plays sound even in silent mode / Do Not Disturb. It requires a special Apple entitlement — you must [request it from Apple](https://developer.apple.com/contact/request/notifications-critical-alerts-entitlement/) before using it.
 
 ### Get current permission status
 
@@ -95,8 +107,28 @@ Checks the current authorization state without prompting the user.
 
 ```ts
 const status = await Notifications.getPermissionStatus();
-// 'granted' | 'denied' | 'undetermined'
+// 'granted' | 'denied' | 'undetermined' | 'provisional'
 ```
+
+### Provisional notifications
+
+Provisional authorization lets you deliver notifications silently — no system prompt is shown to the user upfront. Notifications arrive quietly in Notification Center only (no banner, no sound). The user can then promote your app to full authorization or turn it off directly from there.
+
+This is useful when you want to demonstrate value before asking for full permissions.
+
+```ts
+// Step 1 — request provisional auth. No dialog shown, resolves immediately.
+const status = await Notifications.requestPermissions({ provisional: true });
+// status === 'provisional'
+
+// ... deliver a few silent notifications to show value ...
+
+// Step 2 — at the right moment, request full permissions. Shows the system dialog.
+const upgraded = await Notifications.requestPermissions();
+// 'granted' | 'denied'
+```
+
+See [Apple's documentation](https://developer.apple.com/documentation/usernotifications/asking-permission-to-use-notifications) for the full authorization model.
 
 ### Get the device push token
 
@@ -166,7 +198,24 @@ Notifications.setForegroundPresentationOptions({
 ## Types
 
 ```ts
-type PermissionStatus = 'granted' | 'denied' | 'undetermined';
+type PermissionStatus = 'granted' | 'denied' | 'undetermined' | 'provisional';
+
+interface RequestPermissionsOptions {
+  /** Show notification banners and Notification Center entries. @default true */
+  alert?: boolean;
+  /** Play a sound when a notification is delivered. @default true */
+  sound?: boolean;
+  /** Update the app icon badge number. @default true */
+  badge?: boolean;
+  /** Display notifications in CarPlay. @default false */
+  carPlay?: boolean;
+  /** Play sound even when muted or Do Not Disturb is on. Requires an Apple entitlement. @default false */
+  criticalAlert?: boolean;
+  /** Show a link to your in-app notification settings from the system settings page. @default false */
+  providesAppNotificationSettings?: boolean;
+  /** Request provisional authorization — silent delivery, no prompt shown. @default false */
+  provisional?: boolean;
+}
 
 interface NotificationPayload {
   title: string | undefined;
@@ -197,7 +246,8 @@ import { Notifications } from 'react-native-nitro-notification';
 
 const setupNotifications = async () => {
   const status = await Notifications.requestPermissions();
-  if (status !== 'granted') return;
+  if (status === 'denied' || status === 'undetermined') return;
+  // status is 'granted' or 'provisional' — either way we can get a token
 
   const token = await Notifications.getDevicePushToken();
   await sendTokenToServer(token);

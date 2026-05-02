@@ -11,17 +11,24 @@ class NitroNotification: HybridNitroNotificationSpec {
 
   // MARK: - Permissions
 
-  func requestPermissions() throws -> Promise<PermissionStatus> {
+  func requestPermissions(options: RequestPermissionsOptions?) throws -> Promise<PermissionStatus> {
     return Promise.async {
-      print("[NitroNotification] requestPermissions called")
       let center = UNUserNotificationCenter.current()
-      print("[NitroNotification] requesting authorization")
-      let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
-      print("[NitroNotification] authorization granted: \(granted)")
+      var authOptions: UNAuthorizationOptions = []
+      if options?.alert != false { authOptions.insert(.alert) }
+      if options?.sound != false { authOptions.insert(.sound) }
+      if options?.badge != false { authOptions.insert(.badge) }
+      if options?.carPlay == true { authOptions.insert(.carPlay) }
+      if options?.criticalAlert == true { authOptions.insert(.criticalAlert) }
+      if options?.providesAppNotificationSettings == true { authOptions.insert(.providesAppNotificationSettings) }
+      if options?.provisional == true { authOptions.insert(.provisional) }
+      let granted = try await center.requestAuthorization(options: authOptions)
       if granted {
         await MainActor.run {
-          print("[NitroNotification] calling registerForRemoteNotifications")
           UIApplication.shared.registerForRemoteNotifications()
+        }
+        if options?.provisional == true {
+          return PermissionStatus.provisional
         }
         return PermissionStatus.granted
       }
@@ -34,8 +41,10 @@ class NitroNotification: HybridNitroNotificationSpec {
       let center = UNUserNotificationCenter.current()
       let settings = await center.notificationSettings()
       switch settings.authorizationStatus {
-      case .authorized, .ephemeral, .provisional:
+      case .authorized, .ephemeral:
         return PermissionStatus.granted
+      case .provisional:
+        return PermissionStatus.provisional
       case .denied:
         return PermissionStatus.denied
       case .notDetermined:
