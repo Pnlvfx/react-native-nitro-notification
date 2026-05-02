@@ -1,0 +1,37 @@
+appId: nitronotification.example
+---
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible:
+      text: Nitro Notifications
+    timeout: 10000
+
+- pressKey: Home
+
+- evalScript: ${new Promise(r => setTimeout(r, 1500))}
+
+- runScript:
+    file: send_push.js
+    env:
+      PUSH_TITLE: Background Test
+      PUSH_BODY: Tap to open the app
+
+- extendedWaitUntil:
+    visible:
+      text: Background Test
+    timeout: 8000
+
+- tapOn:
+    text: Background Test
+
+- extendedWaitUntil:
+    visible:
+      id: last-event-text
+    timeout: 8000
+
+- extendedWaitUntil:
+    visible:
+      text: 'Tapped: Background Test (com.apple.UNNotificationDefaultActionIdentifier)'
+    timeout: 8000

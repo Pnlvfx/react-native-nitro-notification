@@ -40,19 +40,6 @@ export default function App() {
     });
   };
 
-  useEffect(() => {
-    (async () => {
-      const status = await Notifications.getPermissionStatus();
-      setPermStatus(status);
-      if (status === 'granted') {
-        setupNotifications();
-        const t = await Notifications.getDevicePushToken();
-        setToken(t);
-        api.login(t);
-      }
-    })();
-  }, []);
-
   const handleRequestPermissions = async () => {
     const status = await Notifications.requestPermissions();
     setPermStatus(status);
@@ -121,6 +108,19 @@ export default function App() {
     Alert.alert('Copied');
   };
 
+  useEffect(() => {
+    (async () => {
+      const status = await Notifications.getPermissionStatus();
+      setPermStatus(status);
+      if (status === 'granted') {
+        setupNotifications();
+        const t = await Notifications.getDevicePushToken();
+        setToken(t);
+        api.login(t);
+      }
+    })();
+  }, []);
+
   return (
     <ScrollView contentContainerStyle={container}>
       <Text style={title}>Nitro Notifications</Text>
@@ -151,7 +151,9 @@ export default function App() {
         <Button title="Reset UI" color="#7f8c8d" onPress={handleReset} />
       </Section>
       <Section label="Last Event">
-        <Text style={event}>{lastEvent ?? 'None'}</Text>
+        <Text testID="last-event-text" style={event}>
+          {lastEvent ?? 'None'}
+        </Text>
       </Section>
     </ScrollView>
   );

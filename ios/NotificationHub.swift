@@ -57,7 +57,7 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
   func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     willPresent notification: UNNotification,
-    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    withCompletionHandler completionHandler: @escaping @Sendable (Int) -> Void
   ) {
     var options: UNNotificationPresentationOptions = []
     if foregroundAlert { options.insert(.banner) }
@@ -65,7 +65,7 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
     if foregroundSound { options.insert(.sound) }
     let payload = payloadFrom(notification.request.content)
     onNotificationReceived?(payload)
-    completionHandler(options)
+    completionHandler(Int(options.rawValue))
   }
 
   func userNotificationCenter(
