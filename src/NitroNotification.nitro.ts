@@ -20,11 +20,10 @@ export interface ForegroundPresentationOptions {
   sound: boolean;
 }
 
-export interface NitroNotification
-  extends HybridObject<{
-    ios: 'swift';
-    android: 'kotlin';
-  }> {
+export interface NitroNotification extends HybridObject<{
+  ios: 'swift';
+  android: 'kotlin';
+}> {
   requestPermissions(): Promise<PermissionStatus>;
   getPermissionStatus(): Promise<PermissionStatus>;
   getDevicePushToken(): Promise<string>;
