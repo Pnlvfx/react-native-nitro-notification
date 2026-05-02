@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import type { PermissionStatus } from 'react-native-nitro-notification';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Button,
@@ -7,19 +8,18 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
 } from 'react-native';
 import { Notifications } from 'react-native-nitro-notification';
-import type { PermissionStatus } from 'react-native-nitro-notification';
 import { api } from './config/api';
+import { Section } from './components/section';
 
 const SERVER = 'http://192.168.1.111:8192';
 
 export default function App() {
   const [permStatus, setPermStatus] =
     useState<PermissionStatus>('undetermined');
-  const [token, setToken] = useState<string | undefined>(undefined);
-  const [lastEvent, setLastEvent] = useState<string | undefined>(undefined);
+  const [token, setToken] = useState<string>();
+  const [lastEvent, setLastEvent] = useState<string>();
 
   const setupNotifications = () => {
     Notifications.setOnTokenRefreshed((t) => {
@@ -122,8 +122,8 @@ export default function App() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Nitro Notifications</Text>
+    <ScrollView contentContainerStyle={container}>
+      <Text style={title}>Nitro Notifications</Text>
       <Section label={`Permission: ${permStatus}`}>
         <Button
           title="Request Permissions"
@@ -132,7 +132,7 @@ export default function App() {
         />
       </Section>
       <Pressable onPress={copyToken}>
-        <Text style={styles.tokenText}>
+        <Text style={tokenText}>
           {token ? `Token: ${token.slice(0, 16)}…` : 'Token: none'}
         </Text>
       </Pressable>
@@ -151,26 +151,13 @@ export default function App() {
         <Button title="Reset UI" color="#7f8c8d" onPress={handleReset} />
       </Section>
       <Section label="Last Event">
-        <Text style={styles.event}>{lastEvent ?? 'None'}</Text>
+        <Text style={event}>{lastEvent ?? 'None'}</Text>
       </Section>
     </ScrollView>
   );
 }
 
-const Section = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) => (
-  <View style={styles.section}>
-    <Text style={styles.label}>{label}</Text>
-    {children}
-  </View>
-);
-
-const styles = StyleSheet.create({
+const { container, title, tokenText, event } = StyleSheet.create({
   container: {
     flexGrow: 1,
     alignItems: 'center',
@@ -180,7 +167,5 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 22, fontWeight: 'bold' },
   tokenText: { color: 'white' },
-  section: { alignItems: 'center', gap: 8, width: '100%' },
-  label: { fontSize: 13, color: '#555', textAlign: 'center' },
   event: { fontSize: 13, color: '#222', textAlign: 'center' },
 });
