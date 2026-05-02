@@ -1,0 +1,33 @@
+appId: nitronotification.example
+---
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    text: Nitro Notifications
+    timeout: 10000
+
+- pressKey: Home
+
+- evalScript: ${new Promise(r => setTimeout(r, 1500))}
+
+- runScript:
+    file: send_push.js
+    env:
+      PUSH_TITLE: Background Test
+      PUSH_BODY: Tap to open the app
+
+- assertVisible:
+    text: Background Test
+    timeout: 8000
+
+- tapOn:
+    text: Background Test
+
+- assertVisible:
+    id: last-event-text
+    timeout: 8000
+
+- assertVisible:
+    text: 'Tapped: Background Test'
+    timeout: 8000

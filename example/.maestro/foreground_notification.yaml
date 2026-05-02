@@ -1,0 +1,25 @@
+appId: nitronotification.example
+---
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible:
+      text: Nitro Notifications
+    timeout: 10000
+
+- runScript:
+    file: send_push.js
+    env:
+      PUSH_TITLE: Foreground Test
+      PUSH_BODY: Notification received in foreground
+
+- extendedWaitUntil:
+    visible:
+      id: last-event-text
+    timeout: 8000
+
+- extendedWaitUntil:
+    visible:
+      text: "Received: Foreground Test — Notification received in foreground"
+    timeout: 8000

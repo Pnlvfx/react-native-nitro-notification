@@ -84,3 +84,6 @@ android/generated
 
 # React Native Nitro Modules
 nitrogen/
+
+# Push relay credentials (real-device APNs — never commit)
+.env.push

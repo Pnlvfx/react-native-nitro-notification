@@ -41,7 +41,11 @@
     "nitrogen": "nitrogen",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "update": "yarn upgrade-interactive",
-    "release": "node tools/release.ts"
+    "release": "node tools/release.ts",
+    "push-relay": "node --env-file=.env.push --experimental-strip-types tools/push-relay.ts",
+    "test:maestro:foreground": "maestro test example/.maestro/foreground_notification.yaml",
+    "test:maestro:background": "maestro test example/.maestro/background_notification.yaml",
+    "test:maestro": "maestro test example/.maestro/foreground_notification.yaml && maestro test example/.maestro/background_notification.yaml"
   },
   "keywords": [
     "react-native",
