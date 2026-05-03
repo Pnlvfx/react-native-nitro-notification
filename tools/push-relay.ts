@@ -1,8 +1,8 @@
 import { createServer } from 'node:http';
 import { execSync } from 'node:child_process';
-import { writeFileSync, unlinkSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 
 const PORT = process.env.PUSH_RELAY_PORT ?? '8765';
 const DEFAULT_BUNDLE_ID =
@@ -43,7 +43,7 @@ const handlePush = (
   req.on('data', (chunk: Buffer) => {
     raw += chunk.toString();
   });
-  req.on('end', () => {
+  req.on('end', async () => {
     try {
       const input = JSON.parse(raw) as {
         title: string;
@@ -54,12 +54,12 @@ const handlePush = (
       const udid = findBootedUDID();
       const payload = buildPayload(input);
       const bundleId = input.bundleId ?? DEFAULT_BUNDLE_ID;
-      const tmpFile = join(tmpdir(), `push-${Date.now()}.json`);
-      writeFileSync(tmpFile, JSON.stringify(payload));
+      const tmpFile = path.join(os.tmpdir(), `push-${Date.now()}.json`);
+      await fs.writeFile(tmpFile, JSON.stringify(payload));
       execSync(`xcrun simctl push ${udid} ${bundleId} ${tmpFile}`, {
         encoding: 'utf8',
       });
-      unlinkSync(tmpFile);
+      await fs.unlink(tmpFile);
       console.log(`[push-relay] sent "${input.title}" to ${udid}`);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true, udid }));

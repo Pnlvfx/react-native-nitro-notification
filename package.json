@@ -43,9 +43,11 @@
     "update": "yarn upgrade-interactive",
     "release": "node tools/release.ts",
     "push-relay": "node --env-file=.env.push --experimental-strip-types tools/push-relay.ts",
+    "test:maestro:permissions:denied": "maestro test example/.maestro/permissions_denied.yaml",
+    "test:maestro:permissions:granted": "maestro test example/.maestro/permissions_granted.yaml",
     "test:maestro:foreground": "maestro test example/.maestro/foreground_notification.yaml",
     "test:maestro:background": "maestro test example/.maestro/background_notification.yaml",
-    "test:maestro": "maestro test example/.maestro/foreground_notification.yaml && maestro test example/.maestro/background_notification.yaml"
+    "test:maestro": "maestro test example/.maestro/permissions_denied.yaml && maestro test example/.maestro/permissions_granted.yaml && maestro test example/.maestro/foreground_notification.yaml && maestro test example/.maestro/background_notification.yaml"
   },
   "keywords": [
     "react-native",
@@ -54,14 +56,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/simonegauli/react-native-nitro-notification.git"
+    "url": "git+https://github.com/Pnlvfx/react-native-nitro-notification.git"
   },
-  "author": "Simone Gauli <simone@gauli.it> (https://github.com/simonegauli)",
+  "author": "Simone Gauli <simone@gauli.it> (https://github.com/Pnlvfx)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/simonegauli/react-native-nitro-notification/issues"
+    "url": "https://github.com/Pnlvfx/react-native-nitro-notification/issues"
   },
-  "homepage": "https://github.com/simonegauli/react-native-nitro-notification#readme",
+  "homepage": "https://github.com/Pnlvfx/react-native-nitro-notification#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
@@ -85,7 +87,7 @@
     "react-native": "0.85.2",
     "react-native-builder-bob": "^0.41.0",
     "react-native-nitro-modules": "^0.35.6",
-    "turbo": "^2.9.7",
+    "turbo": "^2.9.8",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {

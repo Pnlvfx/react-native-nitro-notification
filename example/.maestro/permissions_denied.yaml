@@ -1,0 +1,44 @@
+appId: nitronotification.example
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+    permissions:
+      notifications: unset
+
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      text: Nitro Notifications
+    timeout: 10000
+
+- tapOn:
+    text: Request Permissions
+
+- extendedWaitUntil:
+    visible:
+      text: "Don’t Allow"
+    timeout: 5000
+
+- tapOn:
+    text: "Don’t Allow"
+
+- extendedWaitUntil:
+    visible:
+      text: "Permission: denied"
+    timeout: 5000
+
+- runScript:
+    file: send_push.js
+    env:
+      PUSH_TITLE: Denied Test
+      PUSH_BODY: This should not appear
+
+- evalScript: ${new Promise(r => setTimeout(r, 4000))}
+
+- assertNotVisible:
+    text: "Received: Denied Test"
+
+- assertNotVisible:
+    text: "Tapped: Denied Test"

@@ -10,10 +10,7 @@ import {
   Text,
 } from 'react-native';
 import { Notifications } from 'react-native-nitro-notification';
-import { api } from './config/api';
 import { Section } from './components/section';
-
-const SERVER = 'http://192.168.1.111:8192';
 
 export default function App() {
   const [permStatus, setPermStatus] =
@@ -47,59 +44,20 @@ export default function App() {
       setupNotifications();
       const t = await Notifications.getDevicePushToken();
       setToken(t);
-      api.login(t);
-    }
-  };
-
-  const handleRegisterToken = async () => {
-    if (!token) return;
-    const res = await fetch(`${SERVER}/push/register`, {
-      method: 'POST',
-      headers: api.headers,
-      body: JSON.stringify({ platform: 'ios', sandbox: true }),
-    });
-    if (res.ok) {
-      Alert.alert('Registered', 'Token sent to server.');
-    } else {
-      Alert.alert('Error', `Server responded with ${res.status}`);
-    }
-  };
-
-  const handleSendTestPush = async () => {
-    if (!token) return;
-    const res = await fetch(`${SERVER}/push/test`, {
-      method: 'POST',
-      headers: api.headers,
-      body: JSON.stringify({
-        title: 'Test notification',
-        body: 'Sent from the example app',
-        sandbox: true,
-      }),
-    });
-    if (!res.ok) {
-      Alert.alert('Error', `Server responded with ${res.status}`);
     }
   };
 
   const handleReset = () => {
-    api.logout();
     setPermStatus('undetermined');
     setToken(undefined);
     setLastEvent(undefined);
   };
 
   const handleUnregister = async () => {
-    if (token) {
-      await fetch(`${SERVER}/push/register`, {
-        method: 'DELETE',
-        headers: api.headers,
-        body: JSON.stringify({}),
-      });
-    }
     await Notifications.unregisterForNotifications();
     setToken(undefined);
     setLastEvent(undefined);
-    Alert.alert('Unregistered', 'Token removed from server and device.');
+    Alert.alert('Unregistered', 'Token removed from device.');
   };
 
   const copyToken = () => {
@@ -116,7 +74,6 @@ export default function App() {
         setupNotifications();
         const t = await Notifications.getDevicePushToken();
         setToken(t);
-        api.login(t);
       }
     })();
   }, []);
@@ -128,7 +85,7 @@ export default function App() {
         <Button
           title="Request Permissions"
           onPress={handleRequestPermissions}
-          disabled={permStatus === 'granted'}
+          disabled={permStatus === 'granted' || permStatus === 'denied'}
         />
       </Section>
       <Pressable onPress={copyToken}>
@@ -136,18 +93,13 @@ export default function App() {
           {token ? `Token: ${token.slice(0, 16)}…` : 'Token: none'}
         </Text>
       </Pressable>
-      <Section label="In">
+      <Section label="Actions">
         <Button
-          title="Register Token with Server"
-          onPress={handleRegisterToken}
+          title="Unregister"
+          color="#c0392b"
+          onPress={handleUnregister}
           disabled={!token}
         />
-        <Button
-          title="Send Test Push"
-          onPress={handleSendTestPush}
-          disabled={!token}
-        />
-        <Button title="Unregister" color="#c0392b" onPress={handleUnregister} />
         <Button title="Reset UI" color="#7f8c8d" onPress={handleReset} />
       </Section>
       <Section label="Last Event">

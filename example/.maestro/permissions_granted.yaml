@@ -1,0 +1,35 @@
+appId: nitronotification.example
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+    permissions:
+      notifications: unset
+
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      text: Nitro Notifications
+    timeout: 10000
+
+- tapOn:
+    text: Request Permissions
+
+- extendedWaitUntil:
+    visible:
+      text: Allow
+    timeout: 5000
+
+- tapOn:
+    text: Allow
+
+- extendedWaitUntil:
+    visible:
+      text: "Permission: granted"
+    timeout: 5000
+
+- extendedWaitUntil:
+    notVisible:
+      text: "Token: none"
+    timeout: 20000
