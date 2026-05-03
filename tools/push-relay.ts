@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { execSync } from 'node:child_process';
+import { execa } from 'execa';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -8,11 +8,15 @@ const PORT = process.env.PUSH_RELAY_PORT ?? '8765';
 const DEFAULT_BUNDLE_ID =
   process.env.PUSH_BUNDLE_ID ?? 'nitronotification.example';
 
-const findBootedUDID = (): string => {
-  const raw = execSync('xcrun simctl list devices booted --json', {
-    encoding: 'utf8',
-  });
-  const parsed = JSON.parse(raw) as {
+const findBootedUDID = async (): Promise<string> => {
+  const { stdout } = await execa('xcrun', [
+    'simctl',
+    'list',
+    'devices',
+    'booted',
+    '--json',
+  ]);
+  const parsed = JSON.parse(stdout) as {
     devices: Record<string, Array<{ state: string; udid: string }>>;
   };
   for (const devices of Object.values(parsed.devices)) {
@@ -51,14 +55,12 @@ const handlePush = (
         bundleId?: string;
         data?: Record<string, string>;
       };
-      const udid = findBootedUDID();
+      const udid = await findBootedUDID();
       const payload = buildPayload(input);
       const bundleId = input.bundleId ?? DEFAULT_BUNDLE_ID;
       const tmpFile = path.join(os.tmpdir(), `push-${Date.now()}.json`);
       await fs.writeFile(tmpFile, JSON.stringify(payload));
-      execSync(`xcrun simctl push ${udid} ${bundleId} ${tmpFile}`, {
-        encoding: 'utf8',
-      });
+      await execa('xcrun', ['simctl', 'push', udid, bundleId, tmpFile]);
       await fs.unlink(tmpFile);
       console.log(`[push-relay] sent "${input.title}" to ${udid}`);
       res.writeHead(200, { 'Content-Type': 'application/json' });
