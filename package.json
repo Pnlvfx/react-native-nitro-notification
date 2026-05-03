@@ -42,7 +42,7 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "update": "yarn upgrade-interactive",
     "release": "node tools/release.ts",
-    "push-relay": "node --env-file=.env.push --experimental-strip-types tools/push-relay.ts",
+    "push-relay": "node --env-file=.env.push tools/push-relay.ts",
     "test:maestro:permissions:denied": "maestro test example/.maestro/permissions_denied.yaml",
     "test:maestro:permissions:granted": "maestro test example/.maestro/permissions_granted.yaml",
     "test:maestro:foreground": "maestro test example/.maestro/foreground_notification.yaml",
