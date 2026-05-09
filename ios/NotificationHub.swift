@@ -29,8 +29,7 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
     pendingTokenContinuations.append(completion)
   }
 
-  func setupTokenObserver() {
-    print("[NotificationHub] setupTokenObserver called")
+  private func setupTokenObserver() {
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(handleTokenNotification(_:)),
