@@ -8,12 +8,18 @@
     "start": "node tools/metro.ts",
     "pod": "cd ios && pod install",
     "build:android": "react-native build-android --extra-params \"--no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a\"",
-    "build:ios": "react-native build-ios --mode Debug"
+    "build:ios": "react-native build-ios --mode Debug",
+    "push-relay": "node --env-file .env.push tools/push-relay.ts",
+    "maestro": "node tools/maestro.ts"
   },
   "dependencies": {
+    "@react-navigation/native": "^7.2.4",
+    "@react-navigation/native-stack": "^7.14.14",
     "react": "19.2.3",
     "react-native": "0.85.3",
-    "react-native-nitro-modules": "^0.35.6"
+    "react-native-nitro-modules": "^0.35.6",
+    "react-native-safe-area-context": "^5.7.0",
+    "react-native-screens": "^4.24.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",

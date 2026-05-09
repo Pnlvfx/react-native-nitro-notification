@@ -3,10 +3,28 @@ import { execa } from 'execa';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
-const PORT = process.env.PUSH_RELAY_PORT ?? '8765';
 const DEFAULT_BUNDLE_ID =
   process.env.PUSH_BUNDLE_ID ?? 'nitronotification.example';
+
+export const createPushRelay = (): import('node:http').Server => {
+  return createServer((req, res) => {
+    if (req.method === 'POST' && req.url === '/push') {
+      return handlePush(req, res);
+    }
+    res.writeHead(404);
+    res.end();
+  });
+};
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const PORT = process.env.PUSH_RELAY_PORT ?? '8765';
+  const server = createPushRelay();
+  server.listen(Number(PORT), '127.0.0.1', () => {
+    console.log(`[push-relay] listening on http://127.0.0.1:${PORT}`);
+  });
+}
 
 const findBootedUDID = async (): Promise<string> => {
   const { stdout } = await execa('xcrun', [
@@ -72,13 +90,3 @@ const handlePush = (
     }
   });
 };
-
-const server = createServer((req, res) => {
-  if (req.method === 'POST' && req.url === '/push') return handlePush(req, res);
-  res.writeHead(404);
-  res.end();
-});
-
-server.listen(Number(PORT), '127.0.0.1', () => {
-  console.log(`[push-relay] listening on http://127.0.0.1:${PORT}`);
-});
