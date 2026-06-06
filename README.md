@@ -141,12 +141,15 @@ const token = await Notifications.getDevicePushToken();
 
 ### Listen for token refreshes
 
-APNs tokens can change. Register a listener to always have the latest one.
+APNs tokens can change. Register a listener to always have the latest one. Pass `undefined` to remove the listener.
 
 ```ts
 Notifications.setOnTokenRefreshed((token) => {
   // send token to your server
 });
+
+// Remove listener
+Notifications.setOnTokenRefreshed(undefined);
 ```
 
 ### Unregister from notifications
@@ -159,7 +162,7 @@ await Notifications.unregisterForNotifications();
 
 ### Handle foreground notifications
 
-Fired when a notification arrives while the app is in the foreground.
+Fired when a notification arrives while the app is in the foreground. Pass `undefined` to remove the listener.
 
 ```ts
 Notifications.setOnNotificationReceived((notification) => {
@@ -168,17 +171,23 @@ Notifications.setOnNotificationReceived((notification) => {
   console.log(notification.data); // Record<string, string> | undefined
   console.log(notification.badge); // number | undefined
 });
+
+// Remove listener
+Notifications.setOnNotificationReceived(undefined);
 ```
 
 ### Handle notification taps
 
-Fired when the user taps a notification (foreground or background).
+Fired when the user taps a notification (foreground or background). Pass `undefined` to remove the listener.
 
 ```ts
 Notifications.setOnNotificationTapped((response) => {
   console.log(response.actionIdentifier); // e.g. 'com.apple.UNNotificationDefaultActionIdentifier'
   console.log(response.notification.title);
 });
+
+// Remove listener
+Notifications.setOnNotificationTapped(undefined);
 ```
 
 ### Control foreground presentation
@@ -218,10 +227,10 @@ interface RequestPermissionsOptions {
 }
 
 interface NotificationPayload {
-  title: string | undefined;
-  body: string | undefined;
-  data: Record<string, string> | undefined;
-  badge: number | undefined;
+  title?: string;
+  body?: string;
+  data?: Record<string, string>;
+  badge?: number;
 }
 
 interface NotificationResponse {
