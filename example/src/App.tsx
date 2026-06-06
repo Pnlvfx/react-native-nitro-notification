@@ -1,145 +1,20 @@
-import {
-  type PermissionStatus,
-  Notifications,
-} from 'react-native-nitro-notification';
-import { useEffect, useState } from 'react';
-import {
-  Alert,
-  Button,
-  Clipboard,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-} from 'react-native';
-import { Section } from './components/section';
+import { useEffect } from 'react';
+import { Notifications } from 'react-native-nitro-notification';
+import { Navigation, navigationRef } from './navigation';
 
 export default function App() {
-  const [permStatus, setPermStatus] =
-    useState<PermissionStatus>('undetermined');
-  const [token, setToken] = useState<string>();
-  const [lastEvent, setLastEvent] = useState<string>();
-
   useEffect(() => {
-    let active = true;
-    Notifications.getPermissionStatus().then((status) => {
-      if (active) setPermStatus(status);
+    const sub = Notifications.addOnNotificationTapped((response) => {
+      if (!navigationRef.isReady()) return;
+      navigationRef.navigate('NotificationDetail', {
+        notificationTitle: response.notification.title ?? '',
+        notificationBody: response.notification.body ?? '',
+        notificationData: JSON.stringify(response.notification.data ?? {}),
+        actionIdentifier: response.actionIdentifier,
+      });
     });
-    return () => {
-      active = false;
-    };
+    return () => sub.remove();
   }, []);
 
-  useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    let active = true;
-    Notifications.getDevicePushToken().then((t) => {
-      if (active) setToken(t);
-    });
-    return () => {
-      active = false;
-    };
-  }, [permStatus]);
-
-  useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    const sub = Notifications.addOnTokenRefreshed((t) => setToken(t));
-    return () => sub.remove();
-  }, [permStatus]);
-
-  useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    const sub = Notifications.addOnNotificationReceived((n) => {
-      setLastEvent(`Received: ${n.title ?? ''} — ${n.body ?? ''}`);
-    });
-    return () => sub.remove();
-  }, [permStatus]);
-
-  useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    const sub = Notifications.addOnNotificationTapped((r) => {
-      setLastEvent(
-        `Tapped: ${r.notification.title ?? ''} (${r.actionIdentifier})`
-      );
-    });
-    return () => sub.remove();
-  }, [permStatus]);
-
-  useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    Notifications.setForegroundPresentationOptions({
-      alert: true,
-      badge: true,
-      sound: true,
-    });
-  }, [permStatus]);
-
-  const handleRequestPermissions = async () => {
-    const status = await Notifications.requestPermissions();
-    setPermStatus(status);
-  };
-
-  const handleUnregister = async () => {
-    await Notifications.unregisterForNotifications();
-    setToken(undefined);
-    setLastEvent(undefined);
-    Alert.alert('Unregistered', 'Token removed from device.');
-  };
-
-  const handleReset = () => {
-    setPermStatus('undetermined');
-    setToken(undefined);
-    setLastEvent(undefined);
-  };
-
-  const copyToken = () => {
-    if (!token) return;
-    Clipboard.setString(token);
-    Alert.alert('Copied');
-  };
-
-  return (
-    <ScrollView contentContainerStyle={container}>
-      <Text style={title}>Nitro Notifications</Text>
-      <Section label={`Permission: ${permStatus}`}>
-        <Button
-          title="Request Permissions"
-          onPress={handleRequestPermissions}
-          disabled={permStatus === 'granted' || permStatus === 'denied'}
-        />
-      </Section>
-      <Pressable onPress={copyToken}>
-        <Text style={tokenText}>
-          {token ? `Token: ${token.slice(0, 16)}…` : 'Token: none'}
-        </Text>
-      </Pressable>
-      <Section label="Actions">
-        <Button
-          title="Unregister"
-          color="#c0392b"
-          onPress={handleUnregister}
-          disabled={!token}
-        />
-        <Button title="Reset UI" color="#7f8c8d" onPress={handleReset} />
-      </Section>
-      <Section label="Last Event">
-        <Text testID="last-event-text" style={event}>
-          {lastEvent ?? 'None'}
-        </Text>
-      </Section>
-    </ScrollView>
-  );
+  return <Navigation ref={navigationRef} />;
 }
-
-const { container, title, tokenText, event } = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    gap: 24,
-  },
-  title: { fontSize: 22, fontWeight: 'bold' },
-  tokenText: { color: 'white' },
-  event: { fontSize: 13, color: '#222', textAlign: 'center' },
-});
