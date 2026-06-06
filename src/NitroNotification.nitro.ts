@@ -1,45 +1,15 @@
 import type { HybridObject } from 'react-native-nitro-modules';
+import type { PermissionStatus } from './types/PermissionStatus';
+import type { RequestPermissionsOptions } from './types/RequestPermissionsOptions';
+import type { NotificationPayload } from './types/NotificationPayload';
+import type { NotificationResponse } from './types/NotificationResponse';
+import type { ForegroundPresentationOptions } from './types/ForegroundPresentationOptions';
 
-export type PermissionStatus =
-  | 'granted'
-  | 'denied'
-  | 'undetermined'
-  | 'provisional';
-
-export interface RequestPermissionsOptions {
-  /** Show notification banners and Notification Center entries. @default true */
-  alert?: boolean;
-  /** Play a sound when a notification is delivered. @default true */
-  sound?: boolean;
-  /** Update the app icon badge number. @default true */
-  badge?: boolean;
-  /** Display notifications in CarPlay. @default false */
-  carPlay?: boolean;
-  /** Play sound even when muted or Do Not Disturb is on. Requires an Apple entitlement. @default false */
-  criticalAlert?: boolean;
-  /** Tells the system to show a link to your in-app notification settings from the system settings page. @default false */
-  providesAppNotificationSettings?: boolean;
-  /** Request provisional authorization — notifications deliver silently to Notification Center with no prompt shown to the user. @default false */
-  provisional?: boolean;
-}
-
-export interface NotificationPayload {
-  title: string | undefined;
-  body: string | undefined;
-  data: Record<string, string> | undefined;
-  badge: number | undefined;
-}
-
-export interface NotificationResponse {
-  notification: NotificationPayload;
-  actionIdentifier: string;
-}
-
-export interface ForegroundPresentationOptions {
-  alert: boolean;
-  badge: boolean;
-  sound: boolean;
-}
+export type { PermissionStatus } from './types/PermissionStatus';
+export type { RequestPermissionsOptions } from './types/RequestPermissionsOptions';
+export type { NotificationPayload } from './types/NotificationPayload';
+export type { NotificationResponse } from './types/NotificationResponse';
+export type { ForegroundPresentationOptions } from './types/ForegroundPresentationOptions';
 
 export interface NitroNotification extends HybridObject<{
   ios: 'swift';
@@ -51,12 +21,12 @@ export interface NitroNotification extends HybridObject<{
   getPermissionStatus(): Promise<PermissionStatus>;
   getDevicePushToken(): Promise<string>;
   unregisterForNotifications(): Promise<void>;
-  setOnTokenRefreshed(callback: (token: string) => void): void;
+  setOnTokenRefreshed(callback: ((token: string) => void) | undefined): void;
   setOnNotificationReceived(
-    callback: (notification: NotificationPayload) => void
+    callback: ((notification: NotificationPayload) => void) | undefined
   ): void;
   setOnNotificationTapped(
-    callback: (response: NotificationResponse) => void
+    callback: ((response: NotificationResponse) => void) | undefined
   ): void;
   setForegroundPresentationOptions(
     options: ForegroundPresentationOptions
