@@ -3,11 +3,7 @@ import UIKit
 import UserNotifications
 import NitroModules
 
-class NitroNotification: HybridNitroNotificationSpec {
-
-  private var onTokenRefreshed: ((String) -> Void)?
-  private var onNotificationReceived: ((NotificationPayload) -> Void)?
-  private var onNotificationTapped: ((NotificationResponse) -> Void)?
+final class HybridNitroNotification: HybridNitroNotificationSpec {
 
   // MARK: - Permissions
 
@@ -62,11 +58,7 @@ class NitroNotification: HybridNitroNotificationSpec {
       await MainActor.run {
         UIApplication.shared.registerForRemoteNotifications()
       }
-      return await withCheckedContinuation { continuation in
-        NotificationHub.shared.awaitToken { token in
-          continuation.resume(returning: token)
-        }
-      }
+      return await NotificationHub.shared.awaitToken()
     }
   }
 
@@ -80,27 +72,22 @@ class NitroNotification: HybridNitroNotificationSpec {
 
   // MARK: - Callbacks
 
-  func setOnTokenRefreshed(callback: @escaping (String) -> Void) {
-    onTokenRefreshed = callback
-    NotificationHub.shared.onTokenRefreshed = callback
+  func setOnTokenRefreshed(callback: ((String) -> Void)?) throws {
+    NotificationHub.shared.setOnTokenRefreshed(callback)
   }
 
-  func setOnNotificationReceived(callback: @escaping (NotificationPayload) -> Void) {
-    onNotificationReceived = callback
-    NotificationHub.shared.onNotificationReceived = callback
+  func setOnNotificationReceived(callback: ((NotificationPayload) -> Void)?) throws {
+    NotificationHub.shared.setOnNotificationReceived(callback)
   }
 
-  func setOnNotificationTapped(callback: @escaping (NotificationResponse) -> Void) {
-    onNotificationTapped = callback
-    NotificationHub.shared.onNotificationTapped = callback
+  func setOnNotificationTapped(callback: ((NotificationResponse) -> Void)?) throws {
+    NotificationHub.shared.setOnNotificationTapped(callback)
   }
 
   // MARK: - Foreground Presentation
 
-  func setForegroundPresentationOptions(options: ForegroundPresentationOptions) {
-    NotificationHub.shared.foregroundAlert = options.alert
-    NotificationHub.shared.foregroundBadge = options.badge
-    NotificationHub.shared.foregroundSound = options.sound
+  func setForegroundPresentationOptions(options: ForegroundPresentationOptions) throws {
+    NotificationHub.shared.setForegroundPresentationOptions(options)
   }
 
 }
