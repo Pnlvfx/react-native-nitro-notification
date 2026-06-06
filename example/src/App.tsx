@@ -1,4 +1,7 @@
-import type { PermissionStatus } from 'react-native-nitro-notification';
+import {
+  type PermissionStatus,
+  Notifications,
+} from 'react-native-nitro-notification';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -9,7 +12,6 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
-import { Notifications } from 'react-native-nitro-notification';
 import { Section } from './components/section';
 
 export default function App() {
@@ -18,39 +20,63 @@ export default function App() {
   const [token, setToken] = useState<string>();
   const [lastEvent, setLastEvent] = useState<string>();
 
-  const setupNotifications = () => {
-    Notifications.setOnTokenRefreshed((t) => {
-      setToken(t);
+  useEffect(() => {
+    let active = true;
+    Notifications.getPermissionStatus().then((status) => {
+      if (active) setPermStatus(status);
     });
-    Notifications.setOnNotificationReceived((n) => {
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
+    let active = true;
+    Notifications.getDevicePushToken().then((t) => {
+      if (active) setToken(t);
+    });
+    return () => {
+      active = false;
+    };
+  }, [permStatus]);
+
+  useEffect(() => {
+    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
+    const sub = Notifications.addOnTokenRefreshed((t) => setToken(t));
+    return () => sub.remove();
+  }, [permStatus]);
+
+  useEffect(() => {
+    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
+    const sub = Notifications.addOnNotificationReceived((n) => {
       setLastEvent(`Received: ${n.title ?? ''} — ${n.body ?? ''}`);
     });
-    Notifications.setOnNotificationTapped((r) => {
+    return () => sub.remove();
+  }, [permStatus]);
+
+  useEffect(() => {
+    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
+    const sub = Notifications.addOnNotificationTapped((r) => {
       setLastEvent(
         `Tapped: ${r.notification.title ?? ''} (${r.actionIdentifier})`
       );
     });
+    return () => sub.remove();
+  }, [permStatus]);
+
+  useEffect(() => {
+    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
     Notifications.setForegroundPresentationOptions({
       alert: true,
       badge: true,
       sound: true,
     });
-  };
+  }, [permStatus]);
 
   const handleRequestPermissions = async () => {
     const status = await Notifications.requestPermissions();
     setPermStatus(status);
-    if (status === 'granted') {
-      setupNotifications();
-      const t = await Notifications.getDevicePushToken();
-      setToken(t);
-    }
-  };
-
-  const handleReset = () => {
-    setPermStatus('undetermined');
-    setToken(undefined);
-    setLastEvent(undefined);
   };
 
   const handleUnregister = async () => {
@@ -60,23 +86,17 @@ export default function App() {
     Alert.alert('Unregistered', 'Token removed from device.');
   };
 
+  const handleReset = () => {
+    setPermStatus('undetermined');
+    setToken(undefined);
+    setLastEvent(undefined);
+  };
+
   const copyToken = () => {
     if (!token) return;
     Clipboard.setString(token);
     Alert.alert('Copied');
   };
-
-  useEffect(() => {
-    (async () => {
-      const status = await Notifications.getPermissionStatus();
-      setPermStatus(status);
-      if (status === 'granted') {
-        setupNotifications();
-        const t = await Notifications.getDevicePushToken();
-        setToken(t);
-      }
-    })();
-  }, []);
 
   return (
     <ScrollView contentContainerStyle={container}>

@@ -141,15 +141,15 @@ const token = await Notifications.getDevicePushToken();
 
 ### Listen for token refreshes
 
-APNs tokens can change. Register a listener to always have the latest one. Pass `undefined` to remove the listener.
+APNs tokens can change. Register a listener to always have the latest one. Returns a `ListenerSubscription` — call `.remove()` to unsubscribe. Multiple subscribers are supported.
 
 ```ts
-Notifications.setOnTokenRefreshed((token) => {
+const sub = Notifications.addOnTokenRefreshed((token) => {
   // send token to your server
 });
 
-// Remove listener
-Notifications.setOnTokenRefreshed(undefined);
+// Later, to clean up:
+sub.remove();
 ```
 
 ### Unregister from notifications
@@ -162,32 +162,32 @@ await Notifications.unregisterForNotifications();
 
 ### Handle foreground notifications
 
-Fired when a notification arrives while the app is in the foreground. Pass `undefined` to remove the listener.
+Fired when a notification arrives while the app is in the foreground. Returns a `ListenerSubscription` — call `.remove()` to unsubscribe. Multiple subscribers are supported.
 
 ```ts
-Notifications.setOnNotificationReceived((notification) => {
+const sub = Notifications.addOnNotificationReceived((notification) => {
   console.log(notification.title);
   console.log(notification.body);
   console.log(notification.data); // Record<string, string> | undefined
   console.log(notification.badge); // number | undefined
 });
 
-// Remove listener
-Notifications.setOnNotificationReceived(undefined);
+// Later, to clean up:
+sub.remove();
 ```
 
 ### Handle notification taps
 
-Fired when the user taps a notification (foreground or background). Pass `undefined` to remove the listener.
+Fired when the user taps a notification (foreground or background). Returns a `ListenerSubscription` — call `.remove()` to unsubscribe. Multiple subscribers are supported.
 
 ```ts
-Notifications.setOnNotificationTapped((response) => {
+const sub = Notifications.addOnNotificationTapped((response) => {
   console.log(response.actionIdentifier); // e.g. 'com.apple.UNNotificationDefaultActionIdentifier'
   console.log(response.notification.title);
 });
 
-// Remove listener
-Notifications.setOnNotificationTapped(undefined);
+// Later, to clean up:
+sub.remove();
 ```
 
 ### Control foreground presentation
@@ -207,6 +207,10 @@ Notifications.setForegroundPresentationOptions({
 ## Types
 
 ```ts
+interface ListenerSubscription {
+  remove: () => void;
+}
+
 type PermissionStatus = 'granted' | 'denied' | 'undetermined' | 'provisional';
 
 interface RequestPermissionsOptions {
@@ -253,35 +257,45 @@ interface ForegroundPresentationOptions {
 import { useEffect } from 'react';
 import { Notifications } from 'react-native-nitro-notification';
 
-const setupNotifications = async () => {
-  const status = await Notifications.requestPermissions();
-  if (status === 'denied' || status === 'undetermined') return;
-  // status is 'granted' or 'provisional' — either way we can get a token
-
-  const token = await Notifications.getDevicePushToken();
-  await sendTokenToServer(token);
-
-  Notifications.setOnTokenRefreshed(async (newToken) => {
-    await sendTokenToServer(newToken);
-  });
-
-  Notifications.setForegroundPresentationOptions({
-    alert: true,
-    badge: false,
-    sound: true,
-  });
-
-  Notifications.setOnNotificationReceived((notification) => {
-    console.log('Received:', notification.title);
-  });
-
-  Notifications.setOnNotificationTapped((response) => {
-    console.log('Tapped:', response.notification.title);
-  });
-};
-
 useEffect(() => {
-  setupNotifications();
+  let tokenSub: ReturnType<typeof Notifications.addOnTokenRefreshed> | undefined;
+  let receivedSub: ReturnType<typeof Notifications.addOnNotificationReceived> | undefined;
+  let tappedSub: ReturnType<typeof Notifications.addOnNotificationTapped> | undefined;
+
+  const setup = async () => {
+    const status = await Notifications.requestPermissions();
+    if (status === 'denied' || status === 'undetermined') return;
+    // status is 'granted' or 'provisional' — either way we can get a token
+
+    const token = await Notifications.getDevicePushToken();
+    await sendTokenToServer(token);
+
+    tokenSub = Notifications.addOnTokenRefreshed(async (newToken) => {
+      await sendTokenToServer(newToken);
+    });
+
+    Notifications.setForegroundPresentationOptions({
+      alert: true,
+      badge: false,
+      sound: true,
+    });
+
+    receivedSub = Notifications.addOnNotificationReceived((notification) => {
+      console.log('Received:', notification.title);
+    });
+
+    tappedSub = Notifications.addOnNotificationTapped((response) => {
+      console.log('Tapped:', response.notification.title);
+    });
+  };
+
+  setup();
+
+  return () => {
+    tokenSub?.remove();
+    receivedSub?.remove();
+    tappedSub?.remove();
+  };
 }, []);
 ```
 

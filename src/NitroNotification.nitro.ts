@@ -5,12 +5,6 @@ import type { NotificationPayload } from './types/NotificationPayload';
 import type { NotificationResponse } from './types/NotificationResponse';
 import type { ForegroundPresentationOptions } from './types/ForegroundPresentationOptions';
 
-export type { PermissionStatus } from './types/PermissionStatus';
-export type { RequestPermissionsOptions } from './types/RequestPermissionsOptions';
-export type { NotificationPayload } from './types/NotificationPayload';
-export type { NotificationResponse } from './types/NotificationResponse';
-export type { ForegroundPresentationOptions } from './types/ForegroundPresentationOptions';
-
 export interface NitroNotification extends HybridObject<{
   ios: 'swift';
   android: 'kotlin';
