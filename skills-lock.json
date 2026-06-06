@@ -7,6 +7,12 @@
       "skillPath": "skills/agent-device/SKILL.md",
       "computedHash": "ee8ec8ef693d7febe38b19e8f80ad94cdc20c25a69c8f5fac5cd207af6dcc46a"
     },
+    "build-nitro-modules": {
+      "source": "margelo/react-native-skills",
+      "sourceType": "github",
+      "skillPath": "skills/build-nitro-modules/SKILL.md",
+      "computedHash": "5b092f1fbe9ddb0e9c0d3735dc1adca1c2f770e163175f948b608efafda80cb4"
+    },
     "dogfood": {
       "source": "callstackincubator/agent-device",
       "sourceType": "github",
