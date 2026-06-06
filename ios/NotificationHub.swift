@@ -4,16 +4,18 @@ import UserNotifications
 final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
   static let shared = NotificationHub()
 
-  var foregroundAlert = true
-  var foregroundBadge = true
-  var foregroundSound = true
+  private let lock = NSLock()
 
-  var onTokenRefreshed: ((String) -> Void)?
-  var onNotificationReceived: ((NotificationPayload) -> Void)?
-  var onNotificationTapped: ((NotificationResponse) -> Void)?
+  private var _foregroundAlert = true
+  private var _foregroundBadge = true
+  private var _foregroundSound = true
 
-  private var pendingTokenContinuations: [(String) -> Void] = []
-  private var currentToken: String?
+  private var _onTokenRefreshed: ((String) -> Void)?
+  private var _onNotificationReceived: ((NotificationPayload) -> Void)?
+  private var _onNotificationTapped: ((NotificationResponse) -> Void)?
+
+  private var _pendingTokenContinuations: [(String) -> Void] = []
+  private var _currentToken: String?
 
   override private init() {
     super.init()
@@ -21,12 +23,43 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
     setupTokenObserver()
   }
 
-  func awaitToken(completion: @escaping (String) -> Void) {
-    if let token = currentToken {
-      completion(token)
-      return
+  // MARK: - Thread-safe setters
+
+  func setOnTokenRefreshed(_ callback: ((String) -> Void)?) {
+    lock.withLock { _onTokenRefreshed = callback }
+  }
+
+  func setOnNotificationReceived(_ callback: ((NotificationPayload) -> Void)?) {
+    lock.withLock { _onNotificationReceived = callback }
+  }
+
+  func setOnNotificationTapped(_ callback: ((NotificationResponse) -> Void)?) {
+    lock.withLock { _onNotificationTapped = callback }
+  }
+
+  func setForegroundPresentationOptions(_ options: ForegroundPresentationOptions) {
+    lock.withLock {
+      _foregroundAlert = options.alert
+      _foregroundBadge = options.badge
+      _foregroundSound = options.sound
     }
-    pendingTokenContinuations.append(completion)
+  }
+
+  // MARK: - Token
+
+  func awaitToken() async -> String {
+    return await withCheckedContinuation { continuation in
+      lock.lock()
+      if let token = _currentToken {
+        lock.unlock()
+        continuation.resume(returning: token)
+      } else {
+        _pendingTokenContinuations.append { token in
+          continuation.resume(returning: token)
+        }
+        lock.unlock()
+      }
+    }
   }
 
   private func setupTokenObserver() {
@@ -45,10 +78,14 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
 
   func didRegisterForRemoteNotifications(deviceToken: Data) {
     let token = deviceToken.map { String(format: "%02x", $0) }.joined()
-    currentToken = token
-    onTokenRefreshed?(token)
-    pendingTokenContinuations.forEach { $0(token) }
-    pendingTokenContinuations.removeAll()
+    lock.lock()
+    _currentToken = token
+    let callback = _onTokenRefreshed
+    let continuations = _pendingTokenContinuations
+    _pendingTokenContinuations.removeAll()
+    lock.unlock()
+    callback?(token)
+    continuations.forEach { $0(token) }
   }
 
   // MARK: - UNUserNotificationCenterDelegate
@@ -58,12 +95,18 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
     willPresent notification: UNNotification,
     withCompletionHandler completionHandler: @escaping @Sendable (Int) -> Void
   ) {
+    lock.lock()
+    let alert = _foregroundAlert
+    let badge = _foregroundBadge
+    let sound = _foregroundSound
+    let callback = _onNotificationReceived
+    lock.unlock()
     var options: UNNotificationPresentationOptions = []
-    if foregroundAlert { options.insert(.banner) }
-    if foregroundBadge { options.insert(.badge) }
-    if foregroundSound { options.insert(.sound) }
-    let payload = payloadFrom(notification.request.content)
-    onNotificationReceived?(payload)
+    if alert { options.insert(.banner) }
+    if badge { options.insert(.badge) }
+    if sound { options.insert(.sound) }
+    let payload = notification.request.content.toNotificationPayload()
+    callback?(payload)
     completionHandler(Int(options.rawValue))
   }
 
@@ -72,33 +115,15 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
     didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
-    let payload = payloadFrom(response.notification.request.content)
+    lock.lock()
+    let callback = _onNotificationTapped
+    lock.unlock()
+    let payload = response.notification.request.content.toNotificationPayload()
     let notifResponse = NotificationResponse(
       notification: payload,
       actionIdentifier: response.actionIdentifier
     )
-    onNotificationTapped?(notifResponse)
+    callback?(notifResponse)
     completionHandler()
-  }
-
-  // MARK: - Payload
-
-  func payloadFrom(_ content: UNNotificationContent) -> NotificationPayload {
-    var data: [String: String]? = nil
-    if !content.userInfo.isEmpty {
-      var dict: [String: String] = [:]
-      for (key, value) in content.userInfo {
-        if let k = key as? String, let v = value as? String {
-          dict[k] = v
-        }
-      }
-      data = dict.isEmpty ? nil : dict
-    }
-    return NotificationPayload(
-      title: content.title.isEmpty ? nil : content.title,
-      body: content.body.isEmpty ? nil : content.body,
-      data: data,
-      badge: content.badge.map { Double($0.intValue) }
-    )
   }
 }
