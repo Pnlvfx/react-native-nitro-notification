@@ -1,10 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
 import {
-  type PermissionStatus,
-  Notifications,
-} from 'react-native-nitro-notification';
-import { useEffect, useState } from 'react';
-import {
   Alert,
   Button,
   Clipboard,
@@ -14,74 +9,12 @@ import {
   Text,
 } from 'react-native';
 import { Section } from '../components/section';
+import { useNotificationContext } from '../context/NotificationContext';
 
 export const HomeScreen = () => {
   const navigation = useNavigation();
-  const [permStatus, setPermStatus] =
-    useState<PermissionStatus>('undetermined');
-  const [token, setToken] = useState<string | undefined>(undefined);
-  const [lastReceived, setLastReceived] = useState<string | undefined>(
-    undefined
-  );
-
-  useEffect(() => {
-    let active = true;
-    const load = async () => {
-      const status = await Notifications.getPermissionStatus();
-      if (active) setPermStatus(status);
-    };
-    load();
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    let active = true;
-    const load = async () => {
-      const t = await Notifications.getDevicePushToken();
-      if (active) setToken(t);
-    };
-    load();
-    return () => {
-      active = false;
-    };
-  }, [permStatus]);
-
-  useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    const sub = Notifications.addOnTokenRefreshed((t) => setToken(t));
-    return () => sub.remove();
-  }, [permStatus]);
-
-  useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    const sub = Notifications.addOnNotificationReceived((n) => {
-      setLastReceived(`${n.title ?? '(no title)'} — ${n.body ?? '(no body)'}`);
-    });
-    return () => sub.remove();
-  }, [permStatus]);
-
-  useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    Notifications.setForegroundPresentationOptions({
-      alert: true,
-      badge: true,
-      sound: true,
-    });
-  }, [permStatus]);
-
-  const handleRequestPermissions = async () => {
-    const status = await Notifications.requestPermissions();
-    setPermStatus(status);
-  };
-
-  const handleUnregister = async () => {
-    await Notifications.unregisterForNotifications();
-    setToken(undefined);
-    Alert.alert('Unregistered', 'Token removed from device.');
-  };
+  const { permStatus, token, lastReceived, requestPermissions, unregister } =
+    useNotificationContext();
 
   const copyToken = () => {
     if (!token) return;
@@ -98,7 +31,7 @@ export const HomeScreen = () => {
       <Section label={`Permission: ${permStatus}`}>
         <Button
           title="Request Permissions"
-          onPress={handleRequestPermissions}
+          onPress={requestPermissions}
           disabled={permStatus === 'granted' || permStatus === 'denied'}
         />
       </Section>
@@ -120,7 +53,7 @@ export const HomeScreen = () => {
         <Button
           title="Unregister"
           color="#c0392b"
-          onPress={handleUnregister}
+          onPress={unregister}
           disabled={!token}
         />
       </Section>

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Notifications } from 'react-native-nitro-notification';
 import { Navigation, navigationRef } from './navigation';
+import { NotificationProvider } from './context/NotificationContext';
 
 export default function App() {
   useEffect(() => {
@@ -16,5 +17,9 @@ export default function App() {
     return () => sub.remove();
   }, []);
 
-  return <Navigation ref={navigationRef} />;
+  return (
+    <NotificationProvider>
+      <Navigation ref={navigationRef} />
+    </NotificationProvider>
+  );
 }
