@@ -18,22 +18,11 @@ const NotificationContext = createContext<NotificationContextValue | undefined>(
   undefined
 );
 
-export const useNotificationContext = () => {
-  const ctx = useContext(NotificationContext);
-  if (!ctx)
-    throw new Error(
-      'useNotificationContext must be used within NotificationProvider'
-    );
-  return ctx;
-};
-
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [permStatus, setPermStatus] =
     useState<PermissionStatus>('undetermined');
-  const [token, setToken] = useState<string | undefined>(undefined);
-  const [lastReceived, setLastReceived] = useState<string | undefined>(
-    undefined
-  );
+  const [token, setToken] = useState<string>();
+  const [lastReceived, setLastReceived] = useState<string>();
 
   useEffect(() => {
     let active = true;
@@ -67,12 +56,11 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   }, [permStatus]);
 
   useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
     const sub = Notifications.addOnNotificationReceived((n) => {
-      setLastReceived(`${n.title ?? '(no title)'} — ${n.body ?? '(no body)'}`);
+      setLastReceived(`Received: ${n.title ?? ''} — ${n.body ?? ''}`);
     });
     return () => sub.remove();
-  }, [permStatus]);
+  }, []);
 
   useEffect(() => {
     if (permStatus !== 'granted' && permStatus !== 'provisional') return;
@@ -107,4 +95,13 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </NotificationContext.Provider>
   );
+};
+
+export const useNotification = () => {
+  const ctx = useContext(NotificationContext);
+  if (!ctx)
+    throw new Error(
+      'useNotificationContext must be used within NotificationProvider'
+    );
+  return ctx;
 };

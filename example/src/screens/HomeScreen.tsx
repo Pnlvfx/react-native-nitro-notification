@@ -9,12 +9,12 @@ import {
   Text,
 } from 'react-native';
 import { Section } from '../components/section';
-import { useNotificationContext } from '../context/NotificationContext';
+import { useNotification } from '../context/NotificationContext';
 
 export const HomeScreen = () => {
   const navigation = useNavigation();
   const { permStatus, token, lastReceived, requestPermissions, unregister } =
-    useNotificationContext();
+    useNotification();
 
   const copyToken = () => {
     if (!token) return;
@@ -43,7 +43,7 @@ export const HomeScreen = () => {
       </Pressable>
 
       <Section label="Last Received">
-        <Text testID="last-received-text" style={styles.eventText}>
+        <Text testID="last-event-text" style={styles.eventText}>
           {lastReceived ?? 'None'}
         </Text>
       </Section>
@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'center',
     padding: 24,
     gap: 24,
   },
