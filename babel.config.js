@@ -1,13 +1,13 @@
-module.exports = {
+export default {
   overrides: [
     {
       exclude: /\/node_modules\//,
-      presets: ['module:react-native-builder-bob/babel-preset'],
-      plugins: ['babel-plugin-react-compiler'],
+      presets: ["module:react-native-builder-bob/babel-preset"],
+      plugins: ["babel-plugin-react-compiler"],
     },
     {
       include: /\/node_modules\//,
-      presets: ['module:@react-native/babel-preset'],
+      presets: ["module:@react-native/babel-preset"],
     },
   ],
 };

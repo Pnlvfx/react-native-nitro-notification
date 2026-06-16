@@ -1,25 +1,27 @@
-import { createServer } from 'node:http';
+/* eslint-disable no-console */
+/* eslint-disable no-restricted-properties */
+import { createServer, IncomingMessage, Server, ServerResponse } from 'node:http';
 import { execa } from 'execa';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const DEFAULT_BUNDLE_ID =
-  process.env.PUSH_BUNDLE_ID ?? 'nitronotification.example';
-
-export const createPushRelay = (): import('node:http').Server => {
+export const createPushRelay = (): Server => {
   return createServer((req, res) => {
     if (req.method === 'POST' && req.url === '/push') {
-      return handlePush(req, res);
+      handlePush(req, res);
+      return;
     }
     res.writeHead(404);
     res.end();
   });
 };
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const PORT = process.env.PUSH_RELAY_PORT ?? '8765';
+const [_, arg1] = process.argv;
+
+if (arg1 && import.meta.url === pathToFileURL(arg1).href) {
+  const PORT = process.env['PUSH_RELAY_PORT'] ?? '8765';
   const server = createPushRelay();
   server.listen(Number(PORT), '127.0.0.1', () => {
     console.log(`[push-relay] listening on http://127.0.0.1:${PORT}`);
@@ -27,44 +29,35 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
 }
 
 const findBootedUDID = async (): Promise<string> => {
-  const { stdout } = await execa('xcrun', [
-    'simctl',
-    'list',
-    'devices',
-    'booted',
-    '--json',
-  ]);
+  const { stdout } = await execa('xcrun', ['simctl', 'list', 'devices', 'booted', '--json']);
   const parsed = JSON.parse(stdout) as {
-    devices: Record<string, Array<{ state: string; udid: string }>>;
+    devices: Record<string, { state: string; udid: string }[]>;
   };
+
   for (const devices of Object.values(parsed.devices)) {
     for (const device of devices) {
       if (device.state === 'Booted') return device.udid;
     }
   }
+
   throw new Error('No booted simulator found. Boot one first.');
 };
 
-const buildPayload = (input: {
-  title: string;
-  body: string;
-  data?: Record<string, string>;
-}) => ({
+const buildPayload = (input: { title: string; body: string; data?: Record<string, string> }) => ({
   aps: {
     alert: { title: input.title, body: input.body },
     sound: 'default',
   },
-  ...(input.data ?? {}),
+  ...input.data,
 });
 
-const handlePush = (
-  req: import('node:http').IncomingMessage,
-  res: import('node:http').ServerResponse
-) => {
+const handlePush = (req: IncomingMessage, res: ServerResponse) => {
   let raw = '';
+
   req.on('data', (chunk: Buffer) => {
     raw += chunk.toString();
   });
+
   req.on('end', async () => {
     try {
       const input = JSON.parse(raw) as {
@@ -75,8 +68,8 @@ const handlePush = (
       };
       const udid = await findBootedUDID();
       const payload = buildPayload(input);
-      const bundleId = input.bundleId ?? DEFAULT_BUNDLE_ID;
-      const tmpFile = path.join(os.tmpdir(), `push-${Date.now()}.json`);
+      const bundleId = input.bundleId ?? 'nitronotification.example';
+      const tmpFile = path.join(os.tmpdir(), `push-${Date.now().toString()}.json`);
       await fs.writeFile(tmpFile, JSON.stringify(payload));
       await execa('xcrun', ['simctl', 'push', udid, bundleId, tmpFile]);
       await fs.unlink(tmpFile);

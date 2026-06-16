@@ -1,8 +1,9 @@
-const path = require('path');
-const { getDefaultConfig } = require('@react-native/metro-config');
-const { withMetroConfig } = require('react-native-monorepo-config');
+import path from 'node:path';
+import { getDefaultConfig } from '@react-native/metro-config';
+/** @ts-expect-error idk man, ok. */
+import { withMetroConfig } from 'react-native-monorepo-config';
 
-const root = path.resolve(__dirname, '..');
+const root = path.resolve(import.meta.dirname, '..');
 
 /**
  * Metro configuration
@@ -10,10 +11,11 @@ const root = path.resolve(__dirname, '..');
  *
  * @type {import('metro-config').MetroConfig}
  */
-const config = withMetroConfig(getDefaultConfig(__dirname), {
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+const config = withMetroConfig(getDefaultConfig(import.meta.dirname), {
   root,
-  dirname: __dirname,
+  dirname: import.meta.dirname,
   resetCache: true,
 });
 
-module.exports = config;
+export default config;

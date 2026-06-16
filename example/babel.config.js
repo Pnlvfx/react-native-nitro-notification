@@ -1,10 +1,10 @@
-const path = require('path');
-const { getConfig } = require('react-native-builder-bob/babel-config');
-const pkg = require('../package.json');
+import path from 'node:path';
+import { getConfig } from 'react-native-builder-bob/babel-config';
+import pkg from '../package.json' with { type: 'json' };
 
-const root = path.resolve(__dirname, '..');
+const root = path.resolve(import.meta.dirname, '..');
 
-module.exports = getConfig(
+export default getConfig(
   {
     presets: ['module:@react-native/babel-preset'],
     plugins: ['babel-plugin-react-compiler'],
