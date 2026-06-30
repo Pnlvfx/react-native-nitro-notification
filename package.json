@@ -2,8 +2,21 @@
   "name": "react-native-nitro-notification",
   "version": "0.2.0",
   "description": "Remote push notifications (APNs) via Nitro Modules",
-  "main": "./lib/module/index.js",
-  "types": "./lib/typescript/src/index.d.ts",
+  "keywords": [
+    "react-native",
+    "ios",
+    "android"
+  ],
+  "homepage": "https://github.com/Pnlvfx/react-native-nitro-notification#readme",
+  "bugs": {
+    "url": "https://github.com/Pnlvfx/react-native-nitro-notification/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pnlvfx/react-native-nitro-notification.git"
+  },
+  "license": "MIT",
+  "author": "Simone Gauli <simone@gauli.it> (https://github.com/Pnlvfx)",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -12,6 +25,8 @@
     },
     "./package.json": "./package.json"
   },
+  "main": "./lib/module/index.js",
+  "types": "./lib/typescript/src/index.d.ts",
   "files": [
     "src",
     "lib",
@@ -33,52 +48,37 @@
     "!**/__mocks__",
     "!**/.*"
   ],
-  "scripts": {
-    "example": "yarn workspace react-native-nitro-notification-example",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "prepare": "bob build",
-    "build": "bob build",
-    "nitrogen": "nitrogen",
-    "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "update": "yarn upgrade-interactive",
-    "release": "node tools/release.ts"
-  },
-  "keywords": [
-    "react-native",
-    "ios",
-    "android"
+  "workspaces": [
+    "example"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Pnlvfx/react-native-nitro-notification.git"
-  },
-  "author": "Simone Gauli <simone@gauli.it> (https://github.com/Pnlvfx)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Pnlvfx/react-native-nitro-notification/issues"
-  },
-  "homepage": "https://github.com/Pnlvfx/react-native-nitro-notification#readme",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+  "scripts": {
+    "build": "bob build",
+    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "example": "yarn workspace react-native-nitro-notification-example",
+    "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "nitrogen": "nitrogen",
+    "prepare": "bob build",
+    "release": "node tools/release.ts",
+    "update": "yarn upgrade-interactive"
   },
   "devDependencies": {
-    "@goatjs/react-native-eslint": "^2.45.0",
+    "@goatjs/react-native-eslint": "^2.55.0",
     "@goatjs/typescript-config": "^2.2.0",
     "@react-native/babel-preset": "0.86.0",
     "@react-native/eslint-config": "0.86.0",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.1",
     "@types/react": "^19.2.17",
     "babel-plugin-react-compiler": "1.0.0",
     "del-cli": "^7.0.0",
-    "eslint": "^10.5.0",
+    "eslint": "^10.6.0",
     "execa": "^9.6.1",
-    "nitrogen": "^0.35.9",
-    "prettier": "^3.8.4",
+    "nitrogen": "^0.35.10",
+    "prettier": "^3.9.3",
     "react": "19.2.3",
     "react-native": "0.86.0",
-    "react-native-builder-bob": "^0.42.1",
-    "react-native-nitro-modules": "^0.35.9",
-    "turbo": "^2.9.18",
+    "react-native-builder-bob": "^0.43.0",
+    "react-native-nitro-modules": "^0.35.10",
+    "turbo": "^2.10.1",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
@@ -86,9 +86,18 @@
     "react-native": "*",
     "react-native-nitro-modules": "*"
   },
-  "workspaces": [
-    "example"
-  ],
+  "packageManager": "yarn@4.17.0+sha512.c2957de2f9025ab14d63b24d0d8be1f1655810e22c341042c27f7ecd017b180ec12db73d69ac366d71b304ef9f069349ce462de96f04f8f1da317f4f762c95ae",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "create-react-native-library": {
+    "type": "nitro-module",
+    "languages": "kotlin-swift",
+    "tools": [
+      "eslint"
+    ],
+    "version": "0.57.2"
+  },
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
@@ -114,14 +123,5 @@
         }
       ]
     ]
-  },
-  "create-react-native-library": {
-    "type": "nitro-module",
-    "languages": "kotlin-swift",
-    "tools": [
-      "eslint"
-    ],
-    "version": "0.57.2"
-  },
-  "packageManager": "yarn@4.17.0+sha512.c2957de2f9025ab14d63b24d0d8be1f1655810e22c341042c27f7ecd017b180ec12db73d69ac366d71b304ef9f069349ce462de96f04f8f1da317f4f762c95ae"
+  }
 }
