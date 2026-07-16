@@ -14,13 +14,13 @@ type NativeRegister<TEvent> = (listener: Listener<TEvent> | undefined) => void;
  * gets an independent ListenerSubscription with a remove() handle that only
  * affects their own subscription.
  */
-const createEventChannel = <TEvent>(
-  registerOnNative: NativeRegister<TEvent>
-): ((listener: Listener<TEvent>) => ListenerSubscription) => {
+const createEventChannel = <TEvent>(registerOnNative: NativeRegister<TEvent>): ((listener: Listener<TEvent>) => ListenerSubscription) => {
   const subscribers = new Set<Listener<TEvent>>();
 
   const aggregator = (event: TEvent): void => {
-    subscribers.forEach((listener) => listener(event));
+    for (const listener of subscribers) {
+      listener(event);
+    }
   };
 
   return (listener: Listener<TEvent>): ListenerSubscription => {
@@ -40,13 +40,13 @@ const createEventChannel = <TEvent>(
 };
 
 export const createNotificationListeners = (native: NitroNotification) => ({
-  addOnTokenRefreshed: createEventChannel<string>((listener) =>
-    native.setOnTokenRefreshed(listener)
-  ),
-  addOnNotificationReceived: createEventChannel<NotificationPayload>(
-    (listener) => native.setOnNotificationReceived(listener)
-  ),
-  addOnNotificationTapped: createEventChannel<NotificationResponse>(
-    (listener) => native.setOnNotificationTapped(listener)
-  ),
+  addOnTokenRefreshed: createEventChannel<string>((listener) => {
+    native.setOnTokenRefreshed(listener);
+  }),
+  addOnNotificationReceived: createEventChannel<NotificationPayload>((listener) => {
+    native.setOnNotificationReceived(listener);
+  }),
+  addOnNotificationTapped: createEventChannel<NotificationResponse>((listener) => {
+    native.setOnNotificationTapped(listener);
+  }),
 });

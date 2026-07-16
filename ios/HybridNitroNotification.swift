@@ -76,18 +76,17 @@ final class HybridNitroNotification: HybridNitroNotificationSpec {
     NotificationHub.shared.setOnTokenRefreshed(callback)
   }
 
-  func setOnNotificationReceived(callback: ((NotificationPayload) -> Void)?) throws {
-    NotificationHub.shared.setOnNotificationReceived(callback)
-  }
-
   func setOnNotificationTapped(callback: ((NotificationResponse) -> Void)?) throws {
     NotificationHub.shared.setOnNotificationTapped(callback)
   }
 
   // MARK: - Foreground Presentation
 
-  func setForegroundPresentationOptions(options: ForegroundPresentationOptions) throws {
-    NotificationHub.shared.setForegroundPresentationOptions(options)
+  func setNotificationHandler(
+    handler: ((NotificationPayload) -> Promise<Promise<NotificationPresentationOptions>>)?,
+    handlerTimeoutMs: Double?
+  ) throws {
+    NotificationHub.shared.setNotificationHandler(handler, handlerTimeoutMs: handlerTimeoutMs)
   }
 
 }

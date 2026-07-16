@@ -9,8 +9,8 @@ export type { NotificationResponse } from './types/NotificationResponse';
 export type { ForegroundPresentationOptions } from './types/ForegroundPresentationOptions';
 export type { ListenerSubscription } from './types/ListenerSubscription';
 
-const native =
-  NitroModules.createHybridObject<NitroNotification>('NitroNotification');
+const native = NitroModules.createHybridObject<NitroNotification>('NitroNotification');
+
 const listeners = createNotificationListeners(native);
 
 export const Notifications = {
@@ -18,8 +18,7 @@ export const Notifications = {
   getPermissionStatus: native.getPermissionStatus.bind(native),
   getDevicePushToken: native.getDevicePushToken.bind(native),
   unregisterForNotifications: native.unregisterForNotifications.bind(native),
-  setForegroundPresentationOptions:
-    native.setForegroundPresentationOptions.bind(native),
+  setForegroundPresentationOptions: native.setForegroundPresentationOptions.bind(native),
   addOnTokenRefreshed: listeners.addOnTokenRefreshed,
   addOnNotificationReceived: listeners.addOnNotificationReceived,
   addOnNotificationTapped: listeners.addOnNotificationTapped,

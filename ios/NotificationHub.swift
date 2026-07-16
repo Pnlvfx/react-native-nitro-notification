@@ -1,18 +1,24 @@
 import Foundation
+import NitroModules
 import UserNotifications
+
+private let defaultHandlerTimeoutMs: Double = 5000
+
+private let fallbackPresentationOptions = NotificationPresentationOptions(
+  alert: true,
+  badge: true,
+  sound: true
+)
 
 final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
   static let shared = NotificationHub()
 
   private let lock = NSLock()
 
-  private var _foregroundAlert = true
-  private var _foregroundBadge = true
-  private var _foregroundSound = true
-
   private var _onTokenRefreshed: ((String) -> Void)?
-  private var _onNotificationReceived: ((NotificationPayload) -> Void)?
   private var _onNotificationTapped: ((NotificationResponse) -> Void)?
+  private var _notificationHandler: ((NotificationPayload) -> Promise<Promise<NotificationPresentationOptions>>)?
+  private var _handlerTimeoutMs: Double = defaultHandlerTimeoutMs
 
   private var _pendingTokenContinuations: [(String) -> Void] = []
   private var _currentToken: String?
@@ -29,19 +35,17 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
     lock.withLock { _onTokenRefreshed = callback }
   }
 
-  func setOnNotificationReceived(_ callback: ((NotificationPayload) -> Void)?) {
-    lock.withLock { _onNotificationReceived = callback }
-  }
-
   func setOnNotificationTapped(_ callback: ((NotificationResponse) -> Void)?) {
     lock.withLock { _onNotificationTapped = callback }
   }
 
-  func setForegroundPresentationOptions(_ options: ForegroundPresentationOptions) {
+  func setNotificationHandler(
+    _ handler: ((NotificationPayload) -> Promise<Promise<NotificationPresentationOptions>>)?,
+    handlerTimeoutMs: Double?
+  ) {
     lock.withLock {
-      _foregroundAlert = options.alert
-      _foregroundBadge = options.badge
-      _foregroundSound = options.sound
+      _notificationHandler = handler
+      _handlerTimeoutMs = handlerTimeoutMs ?? defaultHandlerTimeoutMs
     }
   }
 
@@ -96,18 +100,25 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
     withCompletionHandler completionHandler: @escaping @Sendable (Int) -> Void
   ) {
     lock.lock()
-    let alert = _foregroundAlert
-    let badge = _foregroundBadge
-    let sound = _foregroundSound
-    let callback = _onNotificationReceived
+    let handler = _notificationHandler
+    let timeoutMs = _handlerTimeoutMs
     lock.unlock()
-    var options: UNNotificationPresentationOptions = []
-    if alert { options.insert(.banner) }
-    if badge { options.insert(.badge) }
-    if sound { options.insert(.sound) }
+
     let payload = notification.request.content.toNotificationPayload()
-    callback?(payload)
-    completionHandler(Int(options.rawValue))
+
+    switch handler {
+    case .none:
+      completionHandler(Int(presentationOptionsMask(from: fallbackPresentationOptions).rawValue))
+    case .some(let handler):
+      Task {
+        let resolved = await resolvePresentationOptions(
+          handler: handler,
+          payload: payload,
+          timeoutMs: timeoutMs
+        )
+        completionHandler(Int(presentationOptionsMask(from: resolved).rawValue))
+      }
+    }
   }
 
   func userNotificationCenter(
@@ -125,5 +136,50 @@ final class NotificationHub: NSObject, UNUserNotificationCenterDelegate {
     )
     callback?(notifResponse)
     completionHandler()
+  }
+}
+
+private func presentationOptionsMask(from options: NotificationPresentationOptions) -> UNNotificationPresentationOptions {
+  var mask: UNNotificationPresentationOptions = []
+  if options.alert { mask.insert(.banner) }
+  if options.badge { mask.insert(.badge) }
+  if options.sound { mask.insert(.sound) }
+  return mask
+}
+
+private enum PresentationRaceOutcome {
+  case resolved(NotificationPresentationOptions)
+  case rejected
+  case timedOut
+}
+
+private func resolvePresentationOptions(
+  handler: (NotificationPayload) -> Promise<Promise<NotificationPresentationOptions>>,
+  payload: NotificationPayload,
+  timeoutMs: Double
+) async -> NotificationPresentationOptions {
+  let outcome = await withTaskGroup(of: PresentationRaceOutcome.self) { group in
+    group.addTask {
+      do {
+        let innerPromise = try await handler(payload).await()
+        let resolved = try await innerPromise.await()
+        return .resolved(resolved)
+      } catch {
+        return .rejected
+      }
+    }
+    group.addTask {
+      try? await Task.sleep(nanoseconds: UInt64(timeoutMs * 1_000_000))
+      return .timedOut
+    }
+    let first = await group.next() ?? .timedOut
+    group.cancelAll()
+    return first
+  }
+  switch outcome {
+  case .resolved(let options):
+    return options
+  case .rejected, .timedOut:
+    return fallbackPresentationOptions
   }
 }
