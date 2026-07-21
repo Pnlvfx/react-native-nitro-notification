@@ -65,6 +65,7 @@
   },
   "devDependencies": {
     "@eslint/config-helpers": "^0.6.0",
+    "@goatjs/dbz": "^2.62.0",
     "@goatjs/react-native-eslint": "^3.8.0",
     "@goatjs/typescript-config": "^2.2.0",
     "@react-native/babel-preset": "0.86.0",

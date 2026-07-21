@@ -1,6 +1,8 @@
 # react-native-nitro-notification
 
-A high-performance React Native notification library built on [NitroModules](https://nitro.margelo.com).
+A high-performance React Native remote push notification library built on [NitroModules](https://nitro.margelo.com).
+
+> **Platform support:** iOS only. Android support is not yet implemented.
 
 ## Installation
 
@@ -9,180 +11,183 @@ yarn add react-native-nitro-notification
 npx pod-install
 ```
 
+## iOS setup
+
+The library needs to receive the APNs device token from your app delegate. Add the following to your `AppDelegate`:
+
+```swift
+import NitroNotification
+
+func application(
+  _ application: UIApplication,
+  didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+) {
+  NotificationCenter.default.post(
+    name: NitroNotificationTokenNotification,
+    object: nil,
+    userInfo: [NitroNotificationTokenKey: deviceToken]
+  )
+}
+```
+
+No other app delegate changes are required. The library registers itself as a `UNUserNotificationCenterDelegate` automatically at load time.
+
 ## Usage
 
-### Request permission
+### Request permissions
 
 ```ts
-import { NitroNotification } from 'react-native-nitro-notification'
+import { Notifications } from 'react-native-nitro-notification'
 
-const granted = await NitroNotification.requestPermission()
-```
-
-### Schedule a notification
-
-```ts
-await NitroNotification.scheduleNotification({
-  id: 1,
-  title: 'Hello',
-  body: 'World',
-  schedule: { date: new Date(Date.now() + 5000) },
+const status = await Notifications.requestPermissions({
+  alert: true,
+  sound: true,
+  badge: true,
 })
+// status: 'granted' | 'denied' | 'undetermined' | 'provisional'
 ```
 
-### Cancel notifications
+### Get current permission status
 
 ```ts
-// Cancel a specific notification
-await NitroNotification.cancelNotification(1)
+const status = await Notifications.getPermissionStatus()
+```
 
-// Cancel all scheduled / delivered notifications
-await NitroNotification.cancelAll()
+### Get the APNs push token
+
+`requestPermissions` automatically registers for remote notifications on success, so the token is available immediately after a `'granted'` or `'provisional'` result.
+
+```ts
+const token = await Notifications.getDevicePushToken()
+```
+
+### Unregister from remote notifications
+
+```ts
+await Notifications.unregisterForNotifications()
 ```
 
 ### Listen for events
 
 ```ts
-// Notification tapped
-const unsubscribe = NitroNotification.onNotificationTap((notification) => {
-  console.log('Tapped:', notification.id)
+// Token refreshed
+const sub = Notifications.addOnTokenRefreshed((token) => {
+  console.log('New token:', token)
 })
 
-// Action button tapped (Android)
-const unsubscribeAction = NitroNotification.onNotificationAction((action) => {
-  console.log('Action:', action.id, 'on notification', action.notificationId)
+// Notification tapped
+const sub = Notifications.addOnNotificationTapped((response) => {
+  console.log('Tapped:', response.notification.title)
+  console.log('Action:', response.actionIdentifier)
 })
 
 // Clean up
-unsubscribe()
-unsubscribeAction()
+sub.remove()
 ```
 
-## Android: Notification Channels
+### Handle foreground notifications
 
-Android 8+ requires a notification channel before posting notifications.
+By default, foreground notifications are presented with alert, badge, and sound. Use `setNotificationHandler` to control presentation per notification:
 
 ```ts
-// Create a channel
-await NitroNotification.createChannel({
-  id: 'general',
-  name: 'General',
-  description: 'General notifications',
-  importance: NotificationImportance.High,
+Notifications.setNotificationHandler(async (notification) => {
+  console.log('Received in foreground:', notification.title)
+  return { alert: true, badge: true, sound: false }
 })
 
-// List all channels
-const channels = await NitroNotification.getChannels()
-
-// Delete a channel
-await NitroNotification.deleteChannel('general')
+// Clear the handler
+Notifications.setNotificationHandler(undefined)
 ```
 
-### Android-specific notification options
+The handler has a default timeout of 5000 ms. If it rejects or times out, the notification falls back to showing alert, badge, and sound.
 
 ```ts
-await NitroNotification.scheduleNotification({
-  id: 2,
-  title: 'Download complete',
-  body: 'Your file is ready.',
-  schedule: { date: new Date() },
-  android: {
-    channelId: 'general',
-    importance: NotificationImportance.High,
-    smallIcon: 'ic_notification',
-    color: '#FF0000',
-    autoCancel: true,
-    ongoing: false,
-    actions: [
-      { id: 'open', title: 'Open' },
-      { id: 'dismiss', title: 'Dismiss' },
-    ],
-  },
-})
+// Custom timeout
+Notifications.setNotificationHandler(async (notification) => {
+  return { alert: true, badge: false, sound: true }
+}, 3000)
 ```
 
 ## API
 
-### `NitroNotification`
+### `Notifications`
 
 | Method | Description |
 |---|---|
-| `requestPermission()` | Requests notification permission. Returns `true` if granted. |
-| `scheduleNotification(request)` | Schedules a notification. |
-| `cancelNotification(id)` | Cancels a notification by numeric ID. |
-| `cancelAll()` | Cancels all scheduled and delivered notifications. |
-| `createChannel(channel)` | Creates a notification channel (Android only). |
-| `deleteChannel(channelId)` | Deletes a notification channel (Android only). |
-| `getChannels()` | Returns all notification channels (Android only). |
-| `onNotificationTap(callback)` | Subscribes to notification tap events. Returns an unsubscribe function. |
-| `onNotificationAction(callback)` | Subscribes to action button tap events. Returns an unsubscribe function. |
+| `requestPermissions(options?)` | Prompts the user for notification permissions. Returns the resulting `PermissionStatus`. On success, also calls `registerForRemoteNotifications()` so the push token is immediately available. |
+| `getPermissionStatus()` | Returns the current `PermissionStatus` without prompting. |
+| `getDevicePushToken()` | Registers for remote notifications and resolves with the APNs device token as a hex string. |
+| `unregisterForNotifications()` | Unregisters from remote notifications on the device. |
+| `setNotificationHandler(handler, timeoutMs?)` | Sets a callback invoked when a notification arrives while the app is in the foreground. The handler returns `NotificationPresentationOptions` to control how the notification is shown. Pass `undefined` to clear the handler. |
+| `addOnTokenRefreshed(listener)` | Subscribes to push token refresh events. Returns a `ListenerSubscription`. |
+| `addOnNotificationTapped(listener)` | Subscribes to notification tap events. Returns a `ListenerSubscription`. |
 
-### `NotificationRequest`
-
-| Property | Type | Description |
-|---|---|---|
-| `id` | `number` | Unique numeric notification ID. |
-| `title` | `string` | Notification title. |
-| `body` | `string` | Notification body. |
-| `schedule` | `NotificationSchedule` | When to deliver the notification. |
-| `android` | `AndroidNotificationOptions?` | Android-specific options. |
-
-### `NotificationSchedule`
-
-| Property | Type | Description |
-|---|---|---|
-| `date` | `Date` | The date and time to deliver the notification. |
-
-### `AndroidNotificationOptions`
-
-| Property | Type | Description |
-|---|---|---|
-| `channelId` | `string?` | Channel ID (required on Android 8+). |
-| `importance` | `NotificationImportance?` | Override channel importance for this notification. |
-| `smallIcon` | `string?` | Drawable resource name for the small icon. |
-| `color` | `string?` | Accent color as a hex string (e.g. `'#FF0000'`). |
-| `autoCancel` | `boolean?` | Dismiss notification when tapped. Defaults to `true`. |
-| `ongoing` | `boolean?` | Mark notification as ongoing (cannot be dismissed by user). |
-| `actions` | `ActionButton[]?` | Action buttons shown below the notification. |
-
-### `ActionButton`
-
-| Property | Type | Description |
-|---|---|---|
-| `id` | `string` | Unique identifier for the action. |
-| `title` | `string` | Label displayed on the button. |
-| `icon` | `string?` | Drawable resource name for the action icon. |
-
-### `NotificationAction`
-
-Received in `onNotificationAction` callbacks.
-
-| Property | Type | Description |
-|---|---|---|
-| `id` | `string` | The action button ID that was tapped. |
-| `notificationId` | `number` | The ID of the notification the action belongs to. |
-
-### `NotificationChannel`
-
-| Property | Type | Description |
-|---|---|---|
-| `id` | `string` | Unique channel ID. |
-| `name` | `string` | User-visible channel name. |
-| `description` | `string?` | User-visible channel description. |
-| `sound` | `string?` | Sound resource name. |
-| `importance` | `NotificationImportance?` | Channel importance level. |
-
-### `NotificationImportance`
+### `PermissionStatus`
 
 | Value | Description |
 |---|---|
-| `NotificationImportance.Default` | Default importance. |
-| `NotificationImportance.High` | High priority, makes sound and appears as heads-up. |
-| `NotificationImportance.Low` | Low priority, no sound. |
-| `NotificationImportance.Max` | Urgent, full-screen intent. |
-| `NotificationImportance.Min` | Minimal, no sound or visual interruption. |
-| `NotificationImportance.None` | No notifications. |
-| `NotificationImportance.Unspecified` | Unspecified (inherits system default). |
+| `'granted'` | The user has authorized notifications. |
+| `'denied'` | The user has denied notifications. |
+| `'undetermined'` | The user has not yet been asked. |
+| `'provisional'` | Provisional authorization (iOS) -- notifications deliver silently to Notification Center without a prompt. |
+
+### `RequestPermissionsOptions`
+
+All fields are iOS-specific. On Android, this object is accepted but ignored.
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `alert` | `boolean?` | `true` | Show notification banners and Notification Center entries. |
+| `sound` | `boolean?` | `true` | Play a sound when a notification is delivered. |
+| `badge` | `boolean?` | `true` | Update the app icon badge number. |
+| `carPlay` | `boolean?` | `false` | Display notifications in CarPlay. |
+| `criticalAlert` | `boolean?` | `false` | Play sound even when muted or Do Not Disturb is on. Requires an Apple entitlement. |
+| `providesAppNotificationSettings` | `boolean?` | `false` | Show a link to your in-app notification settings from the system settings page. |
+| `provisional` | `boolean?` | `false` | Request provisional authorization -- no prompt shown to the user. |
+
+### `NotificationPayload`
+
+| Property | Type | Description |
+|---|---|---|
+| `title` | `string?` | Notification title. |
+| `body` | `string?` | Notification body. |
+| `data` | `Record<string, string>?` | Custom key-value payload. |
+| `badge` | `number?` | Badge count included in the payload. |
+
+### `NotificationResponse`
+
+Received in `addOnNotificationTapped` callbacks.
+
+| Property | Type | Description |
+|---|---|---|
+| `notification` | `NotificationPayload` | The notification that was tapped. |
+| `actionIdentifier` | `string` | The identifier of the action that was invoked (e.g. `UNNotificationDefaultActionIdentifier` for a plain tap). |
+
+### `NotificationPresentationOptions`
+
+Returned by the `NotificationHandler` to control foreground presentation.
+
+| Property | Type | Description |
+|---|---|---|
+| `alert` | `boolean` | Show the notification banner. |
+| `badge` | `boolean` | Update the app icon badge. |
+| `sound` | `boolean` | Play the notification sound. |
+
+### `NotificationHandler`
+
+```ts
+type NotificationHandler = (
+  notification: NotificationPayload
+) => Promise<NotificationPresentationOptions>
+```
+
+### `ListenerSubscription`
+
+```ts
+interface ListenerSubscription {
+  remove: () => void
+}
+```
 
 ## License
 

@@ -1,5 +1,6 @@
+import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
-import { Alert, Button, Clipboard, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, Button, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { Section } from '../components/section';
 import { useNotification } from '../context/NotificationContext';
 

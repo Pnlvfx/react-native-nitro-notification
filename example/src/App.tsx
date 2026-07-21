@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { Notifications } from 'react-native-nitro-notification';
 import { Navigation, navigationRef } from './navigation';
 import { NotificationProvider } from './context/NotificationContext';
