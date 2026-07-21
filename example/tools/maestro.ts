@@ -19,7 +19,7 @@ const startRelay = async (): Promise<{ stop: () => Promise<void> }> => {
       new Promise((resolve, reject) =>
         server.close((err) => {
           if (err) reject(err);
-          resolve();
+          else resolve();
         }),
       ),
   };

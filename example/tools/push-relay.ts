@@ -58,28 +58,32 @@ const handlePush = (req: IncomingMessage, res: ServerResponse) => {
     raw += chunk.toString();
   });
 
-  req.on('end', async () => {
-    try {
-      const input = JSON.parse(raw) as {
-        title: string;
-        body: string;
-        bundleId?: string;
-        data?: Record<string, string>;
-      };
-      const udid = await findBootedUDID();
-      const payload = buildPayload(input);
-      const bundleId = input.bundleId ?? 'nitronotification.example';
-      const tmpFile = path.join(os.tmpdir(), `push-${Date.now().toString()}.json`);
-      await fs.writeFile(tmpFile, JSON.stringify(payload));
-      await execa('xcrun', ['simctl', 'push', udid, bundleId, tmpFile]);
-      await fs.unlink(tmpFile);
-      console.log(`[push-relay] sent "${input.title}" to ${udid}`);
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: true, udid }));
-    } catch (err) {
-      console.error('[push-relay] error:', err);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: false, error: String(err) }));
-    }
-  });
+  const onEnd = () => {
+    void (async () => {
+      try {
+        const input = JSON.parse(raw) as {
+          title: string;
+          body: string;
+          bundleId?: string;
+          data?: Record<string, string>;
+        };
+        const udid = await findBootedUDID();
+        const payload = buildPayload(input);
+        const bundleId = input.bundleId ?? 'nitronotification.example';
+        const tmpFile = path.join(os.tmpdir(), `push-${Date.now().toString()}.json`);
+        await fs.writeFile(tmpFile, JSON.stringify(payload));
+        await execa('xcrun', ['simctl', 'push', udid, bundleId, tmpFile]);
+        await fs.unlink(tmpFile);
+        console.log(`[push-relay] sent "${input.title}" to ${udid}`);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, udid }));
+      } catch (err) {
+        console.error('[push-relay] error:', err);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: String(err) }));
+      }
+    })();
+  };
+
+  req.on('end', onEnd);
 };

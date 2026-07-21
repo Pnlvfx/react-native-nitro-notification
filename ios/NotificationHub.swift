@@ -158,10 +158,11 @@ private func resolvePresentationOptions(
   payload: NotificationPayload,
   timeoutMs: Double
 ) async -> NotificationPresentationOptions {
+  let outerPromise = handler(payload)
   let outcome = await withTaskGroup(of: PresentationRaceOutcome.self) { group in
     group.addTask {
       do {
-        let innerPromise = try await handler(payload).await()
+        let innerPromise = try await outerPromise.await()
         let resolved = try await innerPromise.await()
         return .resolved(resolved)
       } catch {

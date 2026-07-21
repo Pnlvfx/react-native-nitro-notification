@@ -1,24 +1,17 @@
-import { Notifications, type ForegroundPresentationOptions } from 'react-native-nitro-notification';
-import { useEffect, useState } from 'react';
+import type { NotificationPresentationOptions } from 'react-native-nitro-notification';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { useNotification } from '../context/NotificationContext';
 
 export const SettingsScreen = () => {
-  const [options, setOptions] = useState<ForegroundPresentationOptions>({
-    alert: true,
-    badge: true,
-    sound: true,
-  });
+  const { presentationOptions, setPresentationOptions } = useNotification();
 
-  useEffect(() => {
-    Notifications.setForegroundPresentationOptions(options);
-  }, [options]);
-
-  const toggle = (key: keyof ForegroundPresentationOptions) => {
-    setOptions((prev) => {
-      const next = { ...prev, [key]: !prev[key] };
-      return next;
-    });
+  const toggle = (key: keyof NotificationPresentationOptions) => {
+    setPresentationOptions({ ...presentationOptions, [key]: !presentationOptions[key] });
   };
+
+  const toggleAlert = () => { toggle('alert'); };
+  const toggleBadge = () => { toggle('badge'); };
+  const toggleSound = () => { toggle('sound'); };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -29,18 +22,26 @@ export const SettingsScreen = () => {
         <Row
           description="Display banner when app is in foreground"
           label="Show Alert"
-          onToggle={() => {
-            toggle('alert');
-          }}
-          value={options.alert}
+          onToggle={toggleAlert}
+          value={presentationOptions.alert}
         />
         <View style={styles.divider} />
-        <Row description="Increment app icon badge count" label="Update Badge" onToggle={() => toggle('badge')} value={options.badge ?? false} />
+        <Row
+          description="Increment app icon badge count"
+          label="Update Badge"
+          onToggle={toggleBadge}
+          value={presentationOptions.badge}
+        />
         <View style={styles.divider} />
-        <Row description="Play notification sound" label="Play Sound" onToggle={() => toggle('sound')} value={options.sound ?? false} />
+        <Row
+          description="Play notification sound"
+          label="Play Sound"
+          onToggle={toggleSound}
+          value={presentationOptions.sound}
+        />
       </View>
 
-      <Text style={styles.hint}>Changes apply immediately to the next foreground notification.</Text>
+      <Text style={styles.hint}>{'Changes apply immediately to the next foreground notification.'}</Text>
     </ScrollView>
   );
 };

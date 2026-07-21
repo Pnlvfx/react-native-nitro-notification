@@ -1,5 +1,4 @@
 import type { ListenerSubscription } from './types/ListenerSubscription';
-import type { NotificationPayload } from './types/NotificationPayload';
 import type { NotificationResponse } from './types/NotificationResponse';
 import type { NitroNotification } from './NitroNotification.nitro';
 
@@ -42,9 +41,6 @@ const createEventChannel = <TEvent>(registerOnNative: NativeRegister<TEvent>): (
 export const createNotificationListeners = (native: NitroNotification) => ({
   addOnTokenRefreshed: createEventChannel<string>((listener) => {
     native.setOnTokenRefreshed(listener);
-  }),
-  addOnNotificationReceived: createEventChannel<NotificationPayload>((listener) => {
-    native.setOnNotificationReceived(listener);
   }),
   addOnNotificationTapped: createEventChannel<NotificationResponse>((listener) => {
     native.setOnNotificationTapped(listener);

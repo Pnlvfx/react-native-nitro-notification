@@ -2,6 +2,7 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Section } from '../components/section';
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type NotificationDetailParams = {
   notificationTitle: string;
   notificationBody: string;
@@ -12,12 +13,7 @@ export type NotificationDetailParams = {
 type Props = StaticScreenProps<NotificationDetailParams>;
 
 export const NotificationDetailScreen = ({ route }: Props) => {
-  const {
-    notificationTitle,
-    notificationBody,
-    notificationData,
-    actionIdentifier,
-  } = route.params;
+  const { notificationTitle, notificationBody, notificationData, actionIdentifier } = route.params;
 
   const parsedData = (() => {
     try {
@@ -31,23 +27,19 @@ export const NotificationDetailScreen = ({ route }: Props) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Notification Detail</Text>
-
+      <Text style={styles.title}>{'Notification Detail'}</Text>
       <Section label="Title">
         <Text style={styles.value}>{notificationTitle || '(none)'}</Text>
       </Section>
-
       <Section label="Body">
         <Text style={styles.value}>{notificationBody || '(none)'}</Text>
       </Section>
-
       <Section label="Action">
         <Text style={styles.value}>{actionIdentifier}</Text>
       </Section>
-
       <Section label="Data">
         {dataEntries.length === 0 ? (
-          <Text style={styles.value}>(empty)</Text>
+          <Text style={styles.value}>{'(empty)'}</Text>
         ) : (
           dataEntries.map(([key, val]) => (
             <View key={key} style={styles.row}>
@@ -62,11 +54,7 @@ export const NotificationDetailScreen = ({ route }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 24,
-    gap: 24,
-  },
+  container: { flexGrow: 1, padding: 24, gap: 24 },
   title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center' },
   row: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   key: { fontWeight: '600', fontSize: 13, color: '#555' },

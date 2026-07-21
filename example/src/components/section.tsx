@@ -1,13 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-export const Section = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) => (
+export const Section = ({ label, children }: { readonly label: string; readonly children: ReactNode }) => (
   <View style={section}>
     <Text style={labelStyle}>{label}</Text>
     {children}

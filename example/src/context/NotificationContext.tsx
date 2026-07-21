@@ -1,28 +1,37 @@
 import type { ReactNode } from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, use, useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
-import {
-  type PermissionStatus,
-  Notifications,
-} from 'react-native-nitro-notification';
+import { type PermissionStatus, type NotificationPresentationOptions, Notifications } from 'react-native-nitro-notification';
 
-type NotificationContextValue = {
+interface NotificationContextValue {
   permStatus: PermissionStatus;
   token: string | undefined;
   lastReceived: string | undefined;
+  presentationOptions: NotificationPresentationOptions;
+  setPresentationOptions: (options: NotificationPresentationOptions) => void;
   requestPermissions: () => Promise<void>;
   unregister: () => Promise<void>;
+}
+
+const DEFAULT_PRESENTATION_OPTIONS: NotificationPresentationOptions = {
+  alert: true,
+  badge: true,
+  sound: true,
 };
 
-const NotificationContext = createContext<NotificationContextValue | undefined>(
-  undefined
-);
+const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
 
-export const NotificationProvider = ({ children }: { children: ReactNode }) => {
-  const [permStatus, setPermStatus] =
-    useState<PermissionStatus>('undetermined');
+export const NotificationProvider = ({ children }: { readonly children: ReactNode }) => {
+  const [permStatus, setPermStatus] = useState<PermissionStatus>('undetermined');
   const [token, setToken] = useState<string>();
   const [lastReceived, setLastReceived] = useState<string>();
+  const [presentationOptions, setPresentationOptions] = useState<NotificationPresentationOptions>(DEFAULT_PRESENTATION_OPTIONS);
+
+  // Ref so the handler always reads the latest options without being re-registered.
+  const presentationOptionsRef = useRef(presentationOptions);
+  useEffect(() => {
+    presentationOptionsRef.current = presentationOptions;
+  }, [presentationOptions]);
 
   useEffect(() => {
     let active = true;
@@ -30,7 +39,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       const status = await Notifications.getPermissionStatus();
       if (active) setPermStatus(status);
     };
-    load();
+    void load();
     return () => {
       active = false;
     };
@@ -43,7 +52,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       const t = await Notifications.getDevicePushToken();
       if (active) setToken(t);
     };
-    load();
+    void load();
     return () => {
       active = false;
     };
@@ -51,25 +60,23 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    const sub = Notifications.addOnTokenRefreshed((t) => setToken(t));
-    return () => sub.remove();
+    const sub = Notifications.addOnTokenRefreshed((t) => {
+      setToken(t);
+    });
+    return () => {
+      sub.remove();
+    };
   }, [permStatus]);
 
   useEffect(() => {
-    const sub = Notifications.addOnNotificationReceived((n) => {
+    Notifications.setNotificationHandler((n) => {
       setLastReceived(`Received: ${n.title ?? ''} — ${n.body ?? ''}`);
+      return Promise.resolve(presentationOptionsRef.current);
     });
-    return () => sub.remove();
+    return () => {
+      Notifications.setNotificationHandler(undefined);
+    };
   }, []);
-
-  useEffect(() => {
-    if (permStatus !== 'granted' && permStatus !== 'provisional') return;
-    Notifications.setForegroundPresentationOptions({
-      alert: true,
-      badge: true,
-      sound: true,
-    });
-  }, [permStatus]);
 
   const requestPermissions = async () => {
     const status = await Notifications.requestPermissions();
@@ -83,25 +90,24 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <NotificationContext.Provider
+    <NotificationContext
       value={{
         permStatus,
         token,
         lastReceived,
+        presentationOptions,
+        setPresentationOptions,
         requestPermissions,
         unregister,
       }}
     >
       {children}
-    </NotificationContext.Provider>
+    </NotificationContext>
   );
 };
 
 export const useNotification = () => {
-  const ctx = useContext(NotificationContext);
-  if (!ctx)
-    throw new Error(
-      'useNotificationContext must be used within NotificationProvider'
-    );
+  const ctx = use(NotificationContext);
+  if (!ctx) throw new Error('useNotificationContext must be used within NotificationProvider');
   return ctx;
 };
