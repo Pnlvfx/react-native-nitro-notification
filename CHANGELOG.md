@@ -1,3 +1,9 @@
+## [0.4.0](compare/react-native-nitro-notification%400.3.0...react-native-nitro-notification%400.4.0) "react-native-nitro-notification" (2026-07-21)
+
+### Bug Fixes
+
+* add prepack script 165fd86
+
 ## [0.3.0](compare/react-native-nitro-notification%400.2.0...react-native-nitro-notification%400.3.0) "react-native-nitro-notification" (2026-07-21)
 
 ### Features
