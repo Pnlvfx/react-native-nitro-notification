@@ -59,6 +59,7 @@
     "example": "yarn workspace react-native-nitro-notification-example",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "nitrogen": "nitrogen",
+    "prepack": "bob build",
     "prepare": "bob build",
     "release": "node tools/release.ts",
     "update": "yarn upgrade-interactive"
