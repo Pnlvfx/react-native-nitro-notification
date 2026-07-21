@@ -12,8 +12,8 @@ export type NotificationDetailParams = {
 
 type Props = StaticScreenProps<NotificationDetailParams>;
 
-export const NotificationDetailScreen = ({ route }: Props) => {
-  const { notificationTitle, notificationBody, notificationData, actionIdentifier } = route.params;
+export const NotificationDetailScreen = ({ route: { params } }: Props) => {
+  const { notificationTitle, notificationBody, notificationData, actionIdentifier } = params;
 
   const parsedData = (() => {
     try {

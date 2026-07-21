@@ -3,7 +3,7 @@ import { Notifications } from 'react-native-nitro-notification';
 import { Navigation, navigationRef } from './navigation';
 import { NotificationProvider } from './context/NotificationContext';
 
-export default function App() {
+const App = () => {
   useEffect(() => {
     const sub = Notifications.addOnNotificationTapped((response) => {
       if (!navigationRef.isReady()) return;
@@ -14,7 +14,9 @@ export default function App() {
         actionIdentifier: response.actionIdentifier,
       });
     });
-    return () => sub.remove();
+    return () => {
+      sub.remove();
+    };
   }, []);
 
   return (
@@ -22,4 +24,6 @@ export default function App() {
       <Navigation ref={navigationRef} />
     </NotificationProvider>
   );
-}
+};
+
+export default App;

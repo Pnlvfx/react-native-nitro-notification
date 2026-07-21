@@ -28,10 +28,11 @@ appId: nitronotification.example
 
 - extendedWaitUntil:
     visible:
-      id: last-event-text
+      text: Notification Detail
     timeout: 8000
 
-- extendedWaitUntil:
-    visible:
-      text: 'Tapped: Background Test (com.apple.UNNotificationDefaultActionIdentifier)'
-    timeout: 8000
+- assertVisible:
+    text: Background Test
+
+- assertVisible:
+    text: com.apple.UNNotificationDefaultActionIdentifier
