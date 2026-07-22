@@ -1,3 +1,9 @@
+## [0.5.0](compare/react-native-nitro-notification%400.4.0...react-native-nitro-notification%400.5.0) "react-native-nitro-notification" (2026-07-22)
+
+### Features
+
+* add getBadgeCount and setBadgeCount methods 50e35eb
+
 ## [0.4.0](compare/react-native-nitro-notification%400.3.0...react-native-nitro-notification%400.4.0) "react-native-nitro-notification" (2026-07-21)
 
 ### Bug Fixes
