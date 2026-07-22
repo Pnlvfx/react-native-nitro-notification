@@ -17,6 +17,12 @@ class HybridNitroNotification : HybridNitroNotificationSpec() {
   override fun unregisterForNotifications(): Promise<Unit> =
     Promise.rejected(UnsupportedOperationException("NitroNotification is not yet supported on Android"))
 
+  override fun getBadgeCount(): Promise<Double> =
+    Promise.rejected(UnsupportedOperationException("NitroNotification is not yet supported on Android"))
+
+  override fun setBadgeCount(count: Double): Promise<Boolean> =
+    Promise.rejected(UnsupportedOperationException("NitroNotification is not yet supported on Android"))
+
   override fun setOnTokenRefreshed(callback: ((token: String) -> Unit)?) = Unit
 
   override fun setOnNotificationReceived(callback: ((notification: NotificationPayload) -> Unit)?) = Unit

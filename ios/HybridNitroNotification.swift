@@ -80,6 +80,35 @@ final class HybridNitroNotification: HybridNitroNotificationSpec {
     NotificationHub.shared.setOnNotificationTapped(callback)
   }
 
+  // MARK: - Badge
+
+  func getBadgeCount() throws -> Promise<Double> {
+    return Promise.async {
+      return await MainActor.run {
+        Double(UIApplication.shared.applicationIconBadgeNumber)
+      }
+    }
+  }
+
+  func setBadgeCount(count: Double) throws -> Promise<Bool> {
+    return Promise.async {
+      let center = UNUserNotificationCenter.current()
+      let settings = await center.notificationSettings()
+      guard settings.badgeSetting == .enabled else {
+        return false
+      }
+      let intCount = Int(count)
+      if #available(iOS 16.0, *) {
+        try await center.setBadgeCount(intCount)
+      } else {
+        await MainActor.run {
+          UIApplication.shared.applicationIconBadgeNumber = intCount
+        }
+      }
+      return true
+    }
+  }
+
   // MARK: - Foreground Presentation
 
   func setNotificationHandler(

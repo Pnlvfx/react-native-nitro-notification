@@ -23,4 +23,6 @@ export interface NitroNotification extends HybridObject<{
     handler: ((notification: NotificationPayload) => Promise<NotificationPresentationOptions>) | undefined,
     handlerTimeoutMs?: number
   ): void;
+  getBadgeCount(): Promise<number>;
+  setBadgeCount(count: number): Promise<boolean>;
 }

@@ -14,6 +14,8 @@ export const Notifications = {
   setNotificationHandler: native.setNotificationHandler.bind(native),
   addOnTokenRefreshed: listeners.addOnTokenRefreshed,
   addOnNotificationTapped: listeners.addOnNotificationTapped,
+  getBadgeCount: native.getBadgeCount.bind(native),
+  setBadgeCount: native.setBadgeCount.bind(native),
 };
 
 export type { PermissionStatus } from './types/PermissionStatus';
