@@ -1,7 +1,9 @@
+/* eslint-disable react-doctor/jsx-no-new-object-as-prop */
 import type { ReactNode } from 'react';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { type PermissionStatus, type NotificationPresentationOptions, Notifications } from 'react-native-nitro-notification';
 import { createContext, use, useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
-import { type PermissionStatus, type NotificationPresentationOptions, Notifications } from 'react-native-nitro-notification';
 
 interface NotificationContextValue {
   permStatus: PermissionStatus;
@@ -26,9 +28,8 @@ export const NotificationProvider = ({ children }: { readonly children: ReactNod
   const [token, setToken] = useState<string>();
   const [lastReceived, setLastReceived] = useState<string>();
   const [presentationOptions, setPresentationOptions] = useState<NotificationPresentationOptions>(DEFAULT_PRESENTATION_OPTIONS);
-
-  // Ref so the handler always reads the latest options without being re-registered.
   const presentationOptionsRef = useRef(presentationOptions);
+
   useEffect(() => {
     presentationOptionsRef.current = presentationOptions;
   }, [presentationOptions]);
@@ -71,7 +72,7 @@ export const NotificationProvider = ({ children }: { readonly children: ReactNod
   useEffect(() => {
     Notifications.setNotificationHandler((n) => {
       setLastReceived(`Received: ${n.title ?? ''} — ${n.body ?? ''}`);
-      return Promise.resolve(presentationOptionsRef.current);
+      return presentationOptionsRef.current;
     });
     return () => {
       Notifications.setNotificationHandler(undefined);

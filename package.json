@@ -65,25 +65,25 @@
     "update": "yarn upgrade-interactive"
   },
   "devDependencies": {
-    "@eslint/config-helpers": "^0.6.0",
-    "@goatjs/dbz": "^2.62.0",
-    "@goatjs/react-native-eslint": "^3.8.0",
+    "@eslint/config-helpers": "^0.7.0",
+    "@goatjs/dbz": "^2.64.0",
+    "@goatjs/react-native-eslint": "^3.20.0",
     "@goatjs/typescript-config": "^2.2.0",
-    "@react-native/babel-preset": "0.86.0",
-    "@react-native/eslint-config": "0.86.0",
-    "@types/node": "^26.1.1",
-    "@types/react": "^19.2.17",
+    "@react-native/babel-preset": "0.86.2",
+    "@react-native/eslint-config": "0.86.2",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
     "babel-plugin-react-compiler": "1.0.0",
     "del-cli": "^7.0.0",
-    "eslint": "^10.7.0",
-    "execa": "^10.0.0",
-    "nitrogen": "^0.36.1",
-    "prettier": "^3.9.5",
+    "eslint": "^10.8.1",
+    "execa": "^10.0.1",
+    "nitrogen": "^0.36.5",
+    "prettier": "^3.9.6",
     "react": "19.2.3",
-    "react-native": "0.86.0",
+    "react-native": "0.86.2",
     "react-native-builder-bob": "^0.43.0",
-    "react-native-nitro-modules": "^0.36.1",
-    "turbo": "^2.10.5",
+    "react-native-nitro-modules": "^0.36.5",
+    "turbo": "^2.10.9",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
@@ -91,7 +91,7 @@
     "react-native": "*",
     "react-native-nitro-modules": "*"
   },
-  "packageManager": "yarn@4.17.1+sha512.ccbfabf7d7b6b32075088be9386fb9a2e00bb6887ef07fa56effabc890a56d53da1ccc4128d62db245fcbd3961b236d75335bdf7d5320ed6eafb7588b7ad4697",
+  "packageManager": "yarn@4.18.0+sha512.fcb8716fe7cd0eece141ffc18b92193a9df9204c1ba83189c288835223fc0bbe64af473bab0d5e9927a7daeb5caf2bb07eb2787cc9338ca040ea125f2a1f2f7e",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

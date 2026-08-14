@@ -4,9 +4,6 @@ import UserNotifications
 import NitroModules
 
 final class HybridNitroNotification: HybridNitroNotificationSpec {
-
-  // MARK: - Permissions
-
   func requestPermissions(options: RequestPermissionsOptions?) throws -> Promise<PermissionStatus> {
     return Promise.async {
       let center = UNUserNotificationCenter.current()
