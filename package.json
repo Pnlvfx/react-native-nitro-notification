@@ -70,7 +70,6 @@
     "@goatjs/react-native-eslint": "^3.20.0",
     "@goatjs/typescript-config": "^2.2.0",
     "@react-native/babel-preset": "0.86.2",
-    "@react-native/eslint-config": "0.86.2",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "babel-plugin-react-compiler": "1.0.0",
