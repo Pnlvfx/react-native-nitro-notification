@@ -67,7 +67,8 @@
   "devDependencies": {
     "@eslint/config-helpers": "^0.7.0",
     "@goatjs/dbz": "^2.64.0",
-    "@goatjs/react-native-eslint": "^3.20.0",
+    "@goatjs/react-native-eslint": "^3.21.0",
+    "@goatjs/rnx": "^1.28.0",
     "@goatjs/typescript-config": "^2.2.0",
     "@react-native/babel-preset": "0.86.2",
     "@types/node": "^26.2.0",
@@ -82,7 +83,7 @@
     "react-native": "0.86.2",
     "react-native-builder-bob": "^0.43.0",
     "react-native-nitro-modules": "^0.36.5",
-    "turbo": "^2.10.9",
+    "turbo": "^2.10.10",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
