@@ -26,4 +26,9 @@ class HybridNitroNotification : HybridNitroNotificationSpec() {
   override fun setOnTokenRefreshed(callback: ((token: String) -> Unit)?) = Unit
 
   override fun setOnNotificationTapped(callback: ((response: NotificationResponse) -> Unit)?) = Unit
+
+  override fun setNotificationHandler(
+    handler: ((notification: NotificationPayload) -> Promise<Promise<NotificationPresentationOptions>>)?,
+    handlerTimeoutMs: Double?
+  ) = Unit
 }
